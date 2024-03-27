@@ -68,15 +68,14 @@ cdk deploy --all
 
 설치가 완료되면 아래와 같은 Output이 나옵니다. 
 
-![noname](https://github.com/kyopark2014/llm-multimodal-and-rag/assets/52392004/c5da1590-50b8-49bf-a3dc-686dfdc00fc3)
+![noname](https://github.com/kyopark2014/multimodal-on-aws/assets/52392004/197fcfff-5a97-4e3b-be44-852ec932c414)
 
 
 8) HTMl 파일을 S3에 복사합니다.
 
 아래와 같이 Output의 HtmlUpdateCommend을 붙여넣기 합니다. 
 
-![noname](https://github.com/kyopark2014/llm-multimodal-and-rag/assets/52392004/1e273934-07ba-4319-bbdb-82445e424568)
-
+![image](https://github.com/kyopark2014/multimodal-on-aws/assets/52392004/ac12f567-024f-4ad1-8d14-2452d9c68041)
 
 
 9) Google API Key Update하기
