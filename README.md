@@ -488,7 +488,7 @@ if len(selected_relevant_docs)==0:  # google api
 
 ### CDK를 이용한 인프라 설치
 
-본 실습에서는 Seoul 리전 (ap-northeast-2)을 사용합니다. [인프라 설치](./deployment.md)에 따라 CDK로 인프라 설치를 진행합니다. [CDK 구현 코드](./cdk-multimodal-and-rag/README.md)에서는 Typescript로 인프라를 정의하는 방법에 대해 상세히 설명하고 있습니다. 
+본 실습에서는 Seoul 리전 (ap-northeast-2)을 사용합니다. [인프라 설치](./deployment.md)에 따라 CDK로 인프라 설치를 진행합니다. [CDK 구현 코드](./cdk-multimodal/README.md)에서는 Typescript로 인프라를 정의하는 방법에 대해 상세히 설명하고 있습니다. 
 
 ## 실행결과
 
@@ -578,13 +578,13 @@ if len(selected_relevant_docs)==0:  # google api
 
 더이상 인프라를 사용하지 않는 경우에 아래처럼 모든 리소스를 삭제할 수 있습니다. 
 
-1) [API Gateway Console](https://ap-northeast-2.console.aws.amazon.com/apigateway/main/apis?region=ap-northeast-2)로 접속하여 "api-chatbot-for-llm-multimodal-and-rag", "api-llm-multimodal-and-rag"을 삭제합니다.
+1) [API Gateway Console](https://us-west-2.console.aws.amazon.com/apigateway/main/apis?region=us-west-2)로 접속하여 "api-chatbot-for-llm-multimodal-on-aws", "api-llm-multimodal-on-aws"을 삭제합니다.
 
-2) [Cloud9 Console](https://ap-northeast-2.console.aws.amazon.com/cloud9control/home?region=ap-northeast-2#/)에 접속하여 아래의 명령어로 전체 삭제를 합니다.
+2) [Cloud9 Console](https://us-west-2.console.aws.amazon.com/cloud9control/home?region=us-west-2#/)에 접속하여 아래의 명령어로 전체 삭제를 합니다.
 
 
 ```text
-cd ~/environment/llm-multimodal-and-rag/cdk-multimodal-and-rag/ && cdk destroy --all
+cd ~/environment/multimodal-on-aws/cdk-multimodal/ && cdk destroy --all
 ```
 
 
@@ -597,6 +597,6 @@ LangChain을 이용하여 Anthropic Claude3.0으로 Multimodal과 RAG를 구현�
 
 ### Debug 모드 종료하기
 
-메시지 또는 파일 선택시에 아래와 같이 통계 정보를 제공하고 있습니다. 통계를 위해 추가적인 동작을 하므로 빠른 동작을 위해 Debug Mode를 disable할 필요가 있습니다. [cdk-multimodal-and-rag-stack.ts](./cdk-multimodal-and-rag/lib/cdk-multimodal-and-rag-stack.ts)에서 "debugMessageMode"를 "false"로 설정하거나 채팅 창에서 "disableDebug"라고 입력합니다.
+메시지 또는 파일 선택시에 아래와 같이 통계 정보를 제공하고 있습니다. 통계를 위해 추가적인 동작을 하므로 빠른 동작을 위해 Debug Mode를 disable할 필요가 있습니다. [cdk-multimodal-stack.ts](./cdk-multimodal/lib/cdk-multimodal-stack.ts)에서 "debugMessageMode"를 "false"로 설정하거나 채팅 창에서 "disableDebug"라고 입력합니다.
 
 ![image](https://github.com/kyopark2014/llm-multimodal-and-rag/assets/52392004/f73cfbe8-68ac-4bd5-b9e1-9af250684b75)
