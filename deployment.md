@@ -2,7 +2,7 @@
 
 ## LLM 사용 권한 설정하기
 
-여기서는 LLM으로 Anthropic의 Claude3을 사용하기 위하여, Amazon Bedrock의 Virginia(us-east-1)과 Oregon(us-west-2) 리전을 사용합니다. [Model access - Virginia](https://us-east-1.console.aws.amazon.com/bedrock/home?region=us-east-1#/modelaccess)과 [Model access - Oregon](https://us-west-2.console.aws.amazon.com/bedrock/home?region=us-west-2#/modelaccess)에 접속해서 [Edit]를 선택하여 모든 모델을 사용할 수 있도록 설정합니다. 특히 Anthropic Claude와 "Titan Embeddings G1 - Text"은 LLM 및 Vector Embedding을 위해서 반드시 사용이 가능하여야 합니다.
+여기서는 LLM으로 Anthropic의 Claude3을 사용하기 위하여, Amazon Bedrock의 Oregon(us-west-2) 리전을 사용합니다. [Model access - Oregon](https://us-west-2.console.aws.amazon.com/bedrock/home?region=us-west-2#/modelaccess)에 접속해서 [Edit]를 선택하여 모든 모델을 사용할 수 있도록 설정합니다. 특히 Anthropic Claude (Sonnet)와 "Titan Embeddings G1 - Text"은 LLM 및 Vector Embedding을 위해서 반드시 사용이 가능하여야 합니다.
 
 ![noname](https://github.com/kyopark2014/llm-chatbot-using-claude3/assets/52392004/ca7f361a-1993-498e-93b6-ef19c620cbb1)
 
@@ -37,13 +37,13 @@ chmod a+rx resize.sh && ./resize.sh 80
 4) 소스를 다운로드합니다.
 
 ```java
-git clone https://github.com/kyopark2014/llm-multimodal-and-rag
+git clone https://github.com/kyopark2014/multimodal-on-aws
 ```
 
 5) cdk 폴더로 이동하여 필요한 라이브러리를 설치합니다.
 
 ```java
-cd llm-multimodal-and-rag/cdk-multimodal-and-rag/ && npm install
+cd multimodal-on-aws/cdk-multimodal/ && npm install
 ```
 
 6) CDK 사용을 위해 Bootstraping을 수행합니다.
@@ -57,7 +57,7 @@ aws sts get-caller-identity --query Account --output text
 아래와 같이 bootstrap을 수행합니다. 여기서 "account-id"는 상기 명령어로 확인한 12자리의 Account ID입니다. bootstrap 1회만 수행하면 되므로, 기존에 cdk를 사용하고 있었다면 bootstrap은 건너뛰어도 됩니다.
 
 ```java
-cdk bootstrap aws://[account-id]/ap-northeast-2
+cdk bootstrap aws://[account-id]/us-west-2
 ```
 
 7) 인프라를 설치합니다.
