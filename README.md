@@ -387,32 +387,53 @@ def summary_of_code(chat, code, mode):
 
 ### OpenSearch에 문서 등록하기
 
-파일이 S3에 저장될때 발생하는 putEvent를 받아서 OpenSearch에 문서를 저장합니다. 이때, 저장되는 index에 documentId를 조합합니다. 만약 기존에 동일한 문서가 업로드 되었다면 삭제후 등록을 수행합니다. 상세한 코드는 [lambda-document-manager](./lambda-document-manager/lambda_function.py)을 참조합니다. 
+파일이 S3에 저장될때 발생하는 putEvent를 받아서 OpenSearch에 문서를 저장합니다. 이때, 문서가 업로드할때 생성하는 meta를 이용하여 업데이트시 삭제후 등록을 수행합니다. 상세한 코드는 [lambda-document-manager](./lambda-document-manager/lambda_function.py)을 참조합니다. 
 
 
 ```python
-def store_document_for_opensearch(bedrock_embeddings, docs, documentId):
-    index_name = get_index_name(documentId)
-    
-    delete_index_if_exist(index_name)
+index_name = 'idx-rag'
+vectorstore = OpenSearchVectorSearch(
+    index_name=index_name,  
+    is_aoss = False,
+    #engine="faiss",  # default: nmslib
+    embedding_function = bedrock_embeddings,
+    opensearch_url = opensearch_url,
+    http_auth=(opensearch_account, opensearch_passwd),
+)
 
-        vectorstore = OpenSearchVectorSearch(
-            index_name=index_name,  
-            is_aoss = False,
-            #engine="faiss",  # default: nmslib
-            embedding_function = bedrock_embeddings,
-            opensearch_url = opensearch_url,
-            http_auth=(opensearch_account, opensearch_passwd),
-        )
+def store_document_for_opensearch(docs, key):    
+    objectName = (key[key.find(s3_prefix)+len(s3_prefix)+1:len(key)])
+    metadata_key = meta_prefix+objectName+'.metadata.json'
+    delete_document_if_exist(metadata_key)
+    
+    try:        
         response = vectorstore.add_documents(docs, bulk_size = 2000)
+        print('response of adding documents: ', response)
+    except Exception:
+        err_msg = traceback.format_exc()
+        print('error message: ', err_msg)                
 
-def get_index_name(documentId):
-    index_name = "idx-"+documentId
-                                                    
-    if len(index_name)>=100: # reduce index size
-        index_name = 'idx-'+index_name[len(index_name)-100:]
-    
-    return index_name
+    return response
+
+def delete_document_if_exist(metadata_key):
+    try: 
+        s3r = boto3.resource("s3")
+        bucket = s3r.Bucket(s3_bucket)
+        objs = list(bucket.objects.filter(Prefix=metadata_key))
+        
+        if(len(objs)>0):
+            doc = s3r.Object(s3_bucket, metadata_key)
+            meta = doc.get()['Body'].read().decode('utf-8')
+            ids = json.loads(meta)['ids']
+            result = vectorstore.delete(ids)
+            print('result: ', result)        
+        else:
+            print('no meta file: ', metadata_key)
+            
+    except Exception:
+        err_msg = traceback.format_exc()
+        print('error message: ', err_msg)        
+        raise Exception ("Not able to create meta file")
 ```
 
 ### Google Search API 활용
