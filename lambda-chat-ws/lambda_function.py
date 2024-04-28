@@ -109,7 +109,7 @@ def get_chat(profile_of_LLMs, selected_LLM):
     }
     # print('parameters: ', parameters)
 
-    chat = ChatBedrock(   # new chat model
+    chat = ChatBedrock(  
         model_id=modelId,
         client=boto3_bedrock, 
         model_kwargs=parameters,

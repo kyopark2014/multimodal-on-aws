@@ -62,15 +62,30 @@ os_client = OpenSearch(
     ssl_show_warn = False,
 )
 
-def delete_index_if_exist(index_name):    
-    if os_client.indices.exists(index_name):
-        print('delete opensearch document index: ', index_name)
-        response = os_client.indices.delete(
-            index=index_name
-        )
-        print('removed index: ', response)    
-    else:
-        print('no index: ', index_name)
+def delete_document_if_exist(metadata_key):
+    try: 
+        s3r = boto3.resource("s3")
+        bucket = s3r.Bucket(s3_bucket)
+        objs = list(bucket.objects.filter(Prefix=metadata_key))
+        print('objs: ', objs)
+        
+        if(len(objs)>0):
+            doc = s3r.Object(s3_bucket, metadata_key)
+            meta = doc.get()['Body'].read().decode('utf-8')
+            print('meta: ', meta)
+            
+            ids = json.loads(meta)['ids']
+            print('ids: ', ids)
+            
+            result = vectorstore.delete(ids)
+            print('result: ', result)        
+        else:
+            print('no meta file: ', metadata_key)
+            
+    except Exception:
+        err_msg = traceback.format_exc()
+        print('error message: ', err_msg)        
+        raise Exception ("Not able to create meta file")
 
 # embedding for RAG
 region_name = os.environ.get('bedrock_region')
