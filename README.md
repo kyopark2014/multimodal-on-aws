@@ -45,7 +45,7 @@ parameters = {
     "stop_sequences": [HUMAN_PROMPT]
 }
 
-chat = ChatBedrock(   # new chat model
+chat = ChatBedrock(  
     model_id=modelId,
     client=boto3_bedrock, 
     model_kwargs=parameters,
