@@ -1331,8 +1331,10 @@ def search_by_opensearch(keyword: str) -> str:
     for i, document in enumerate(relevant_documents):
         print(f'## Document(opensearch-vector) {i+1}: {document}')
 
-        excerpt = document[0].page_content        
-        uri = document[0].metadata['uri']
+        excerpt = document[0].page_content     
+        uri = ""
+        if "uri" in document[0].metadata:   
+            uri = document[0].metadata['uri']
                     
         answer = answer + f"{excerpt}, URL: {uri}\n\n"
     
