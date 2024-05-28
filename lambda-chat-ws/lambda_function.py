@@ -1548,10 +1548,10 @@ def getResponse(connectionId, jsonBody):
         selected_LLM = 0       
         print ('new LLM_for_chat: ', LLM_for_chat) 
         
-    profile = LLM_for_chat[LLM_for_chat]
+    profile = LLM_for_chat[selected_chat]
     bedrock_region =  profile['bedrock_region']
     modelId = profile['model_id']
-    print(f'LLM_for_chat: {LLM_for_chat}, bedrock_region: {bedrock_region}, modelId: {modelId}')
+    print(f'selected_chat: {selected_chat}, bedrock_region: {bedrock_region}, modelId: {modelId}')
     # print('profile: ', profile)
     
     chat = get_chat()    
