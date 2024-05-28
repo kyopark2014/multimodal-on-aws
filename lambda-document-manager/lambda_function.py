@@ -20,12 +20,11 @@ from opensearchpy import OpenSearch
 from pptx import Presentation
 from multiprocessing import Process, Pipe
 from langchain_core.prompts import ChatPromptTemplate
-from langchain_community.chat_models import BedrockChat
-from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_aws import ChatBedrock
 
-s3 = boto3.client('s3')
+sqs = boto3.client('sqs')
+s3_client = boto3.client('s3')  
 
 s3_bucket = os.environ.get('s3_bucket') # bucket name
 s3_prefix = os.environ.get('s3_prefix')
@@ -38,9 +37,12 @@ opensearch_passwd = os.environ.get('opensearch_passwd')
 opensearch_url = os.environ.get('opensearch_url')
 sqsUrl = os.environ.get('sqsUrl')
 doc_prefix = s3_prefix+'/'
-
-sqs = boto3.client('sqs')
-s3_client = boto3.client('s3')  
+LLM_for_chat = json.loads(os.environ.get('LLM_for_chat'))
+LLM_for_multimodal= json.loads(os.environ.get('LLM_for_multimodal'))
+LLM_for_embedding = json.loads(os.environ.get('LLM_for_embedding'))
+selected_chat = 0
+selected_multimodal = 0
+selected_embedding = 0
 
 roleArn = os.environ.get('roleArn') 
 path = os.environ.get('path')
@@ -87,24 +89,116 @@ def delete_document_if_exist(metadata_key):
         print('error message: ', err_msg)        
         raise Exception ("Not able to create meta file")
 
-# embedding for RAG
-region_name = os.environ.get('bedrock_region')
-    
-boto3_bedrock = boto3.client(
-    service_name='bedrock-runtime',
-    region_name=region_name,
-    config=Config(
-        retries = {
-            'max_attempts': 30
-        }            
+def get_chat():
+    global selected_chat
+    profile = LLM_for_chat[selected_chat]
+    bedrock_region =  profile['bedrock_region']
+    modelId = profile['model_id']
+    print(f'selected_chat: {selected_chat}, bedrock_region: {bedrock_region}, modelId: {modelId}')
+    maxOutputTokens = int(profile['maxOutputTokens'])
+                          
+    # bedrock   
+    boto3_bedrock = boto3.client(
+        service_name='bedrock-runtime',
+        region_name=bedrock_region,
+        config=Config(
+            retries = {
+                'max_attempts': 30
+            }
+        )
     )
-)
+    parameters = {
+        "max_tokens":maxOutputTokens,     
+        "temperature":0.1,
+        "top_k":250,
+        "top_p":0.9,
+        "stop_sequences": [HUMAN_PROMPT]
+    }
+    # print('parameters: ', parameters)
 
-bedrock_embeddings = BedrockEmbeddings(
-    client=boto3_bedrock,
-    region_name = region_name,
-    model_id = 'amazon.titan-embed-text-v1' 
-)   
+    chat = ChatBedrock(   # new chat model
+        model_id=modelId,
+        client=boto3_bedrock, 
+        model_kwargs=parameters,
+    )    
+    
+    selected_chat = selected_chat + 1
+    if selected_chat == len(LLM_for_chat):
+        selected_chat = 0
+    
+    return chat
+
+def get_multimodal():
+    global selected_multimodal
+    
+    profile = LLM_for_multimodal[selected_multimodal]
+    bedrock_region =  profile['bedrock_region']
+    modelId = profile['model_id']
+    print(f'selected_multimodal: {selected_multimodal}, bedrock_region: {bedrock_region}, modelId: {modelId}')
+    maxOutputTokens = int(profile['maxOutputTokens'])
+                          
+    # bedrock   
+    boto3_bedrock = boto3.client(
+        service_name='bedrock-runtime',
+        region_name=bedrock_region,
+        config=Config(
+            retries = {
+                'max_attempts': 30
+            }
+        )
+    )
+    parameters = {
+        "max_tokens":maxOutputTokens,     
+        "temperature":0.1,
+        "top_k":250,
+        "top_p":0.9,
+        "stop_sequences": [HUMAN_PROMPT]
+    }
+    # print('parameters: ', parameters)
+
+    multimodal = ChatBedrock(   # new chat model
+        model_id=modelId,
+        client=boto3_bedrock, 
+        model_kwargs=parameters,
+    )    
+    
+    selected_multimodal = selected_multimodal + 1
+    if selected_multimodal == len(LLM_for_multimodal):
+        selected_multimodal = 0
+    
+    return multimodal
+
+def get_embedding():
+    global selected_embedding
+    profile = LLM_for_embedding[selected_embedding]
+    bedrock_region =  profile['bedrock_region']
+    model_id = profile['model_id']
+    print(f'selected_embedding: {selected_embedding}, bedrock_region: {bedrock_region}')
+    
+    # bedrock   
+    boto3_bedrock = boto3.client(
+        service_name='bedrock-runtime',
+        # region_name=bedrock_region,  # use default
+        config=Config(
+            retries = {
+                'max_attempts': 30
+            }
+        )
+    )
+    
+    bedrock_embedding = BedrockEmbeddings(
+        client=boto3_bedrock,
+        region_name = bedrock_region,
+        model_id = model_id
+    )  
+    
+    selected_embedding = selected_embedding + 1
+    if selected_embedding == len(LLM_for_embedding):
+        selected_embedding = 0
+    
+    return bedrock_embedding
+
+bedrock_embeddings = get_embedding()
 
 index_name = 'idx-rag'
 vectorstore = OpenSearchVectorSearch(
@@ -309,41 +403,6 @@ def get_parameter(model_type, maxOutputTokens):
             "stop_sequences": [HUMAN_PROMPT]            
         }
         
-# Multi-LLM
-def get_chat(profile_of_LLMs, selected_LLM):
-    profile = profile_of_LLMs[selected_LLM]
-    bedrock_region =  profile['bedrock_region']
-    modelId = profile['model_id']
-    print(f'LLM: {selected_LLM}, bedrock_region: {bedrock_region}, modelId: {modelId}')
-    maxOutputTokens = int(profile['maxOutputTokens'])
-                          
-    # bedrock   
-    boto3_bedrock = boto3.client(
-        service_name='bedrock-runtime',
-        region_name=bedrock_region,
-        config=Config(
-            retries = {
-                'max_attempts': 30
-            }            
-        )
-    )
-    parameters = {
-        "max_tokens":maxOutputTokens,     
-        "temperature":0.1,
-        "top_k":250,
-        "top_p":0.9,
-        "stop_sequences": [HUMAN_PROMPT]
-    }
-    # print('parameters: ', parameters)
-
-    chat = ChatBedrock(  
-        model_id=modelId,
-        client=boto3_bedrock, 
-        model_kwargs=parameters,
-    )         
-    
-    return chat
-
 def summary_of_code(chat, code, mode):
     if mode == 'py': 
         system = (
@@ -434,7 +493,6 @@ def summarize_process_for_relevent_code(conn, chat, code, key, region_name):
     conn.close()
 
 def summarize_relevant_codes_using_parallel_processing(codes, key):
-    selected_LLM = 0
     relevant_codes = []    
     processes = []
     parent_connections = []
@@ -442,16 +500,12 @@ def summarize_relevant_codes_using_parallel_processing(codes, key):
         parent_conn, child_conn = Pipe()
         parent_connections.append(parent_conn)
             
-        chat = get_chat(profile_of_LLMs, selected_LLM)
-        region_name = profile_of_LLMs[selected_LLM]['bedrock_region']
+        chat = get_chat()
+        region_name = LLM_for_chat[selected_chat]['bedrock_region']
 
         process = Process(target=summarize_process_for_relevent_code, args=(child_conn, chat, code, key, region_name))
         processes.append(process)
-
-        selected_LLM = selected_LLM + 1
-        if selected_LLM == len(profile_of_LLMs):
-            selected_LLM = 0
-
+        
     for process in processes:
         process.start()
             
@@ -575,7 +629,7 @@ def lambda_handler(event, context):
 
                 documentId = ""
                 try: 
-                    metadata_obj = s3.get_object(Bucket=bucket, Key=metadata_key)
+                    metadata_obj = s3_client.get_object(Bucket=bucket, Key=metadata_key)
                     metadata_body = metadata_obj['Body'].read().decode('utf-8')
                     metadata = json.loads(metadata_body)
                     print('metadata: ', metadata)
@@ -592,7 +646,7 @@ def lambda_handler(event, context):
                         delete_document_if_exist(metadata_key)
                         
                         print('delete metadata: ', metadata_key)                        
-                        result = s3.delete_object(Bucket=bucket, Key=metadata_key)
+                        result = s3_client.delete_object(Bucket=bucket, Key=metadata_key)
                         # print('result of metadata deletion: ', result)
                         
                     except Exception:
@@ -605,7 +659,7 @@ def lambda_handler(event, context):
         elif eventName == "ObjectCreated:Put":            
             size = 0
             try:
-                s3obj = s3.get_object(Bucket=bucket, Key=key)
+                s3obj = s3_client.get_object(Bucket=bucket, Key=key)
                 print(f"Got object: {s3obj}")        
                 size = int(s3obj['ContentLength'])    
                 
@@ -664,7 +718,7 @@ def lambda_handler(event, context):
                                 function_name = code[start+1:end]
                                 # print('function_name: ', function_name)
                                                 
-                                chat = get_chat(profile_of_LLMs, 0)      
+                                chat = get_multimodal()      
                                         
                                 if file_type == 'py':
                                     mode = 'python'
@@ -717,7 +771,7 @@ def lambda_handler(event, context):
                     img_base64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
                                                     
                     # extract text from the image
-                    chat = get_chat(profile_of_LLMs, 0)    
+                    chat = get_multimodal()    
                     text = extract_text(chat, img_base64)
                     extracted_text = text[text.find('<result>')+8:len(text)-9] # remove <result> tag
                     print('extracted_text: ', extracted_text)

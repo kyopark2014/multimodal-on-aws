@@ -49,7 +49,11 @@ opensearch_url = os.environ.get('opensearch_url')
 path = os.environ.get('path')
 doc_prefix = s3_prefix+'/'
 speech_prefix = 'speech/'
+LLM_for_chat = json.loads(os.environ.get('LLM_for_chat'))
+LLM_for_multimodal= json.loads(os.environ.get('LLM_for_multimodal'))
 LLM_for_embedding = json.loads(os.environ.get('LLM_for_embedding'))
+selected_chat = 0
+selected_multimodal = 0
 selected_embedding = 0
 
 useParallelRAG = os.environ.get('useParallelRAG', 'true')
@@ -140,12 +144,12 @@ AI_PROMPT = "\n\nAssistant:"
 
 map_chain = dict() 
 
-# Multi-LLM
-def get_chat(profile_of_LLMs, selected_LLM):
-    profile = profile_of_LLMs[selected_LLM]
+def get_chat():
+    global selected_chat
+    profile = LLM_for_chat[selected_chat]
     bedrock_region =  profile['bedrock_region']
     modelId = profile['model_id']
-    print(f'LLM: {selected_LLM}, bedrock_region: {bedrock_region}, modelId: {modelId}')
+    print(f'selected_chat: {selected_chat}, bedrock_region: {bedrock_region}, modelId: {modelId}')
     maxOutputTokens = int(profile['maxOutputTokens'])
                           
     # bedrock   
@@ -155,7 +159,7 @@ def get_chat(profile_of_LLMs, selected_LLM):
         config=Config(
             retries = {
                 'max_attempts': 30
-            }            
+            }
         )
     )
     parameters = {
@@ -167,19 +171,64 @@ def get_chat(profile_of_LLMs, selected_LLM):
     }
     # print('parameters: ', parameters)
 
-    chat = ChatBedrock(  
+    chat = ChatBedrock(   # new chat model
         model_id=modelId,
         client=boto3_bedrock, 
         model_kwargs=parameters,
     )    
     
+    selected_chat = selected_chat + 1
+    if selected_chat == len(LLM_for_chat):
+        selected_chat = 0
+    
     return chat
+
+def get_multimodal():
+    global selected_multimodal
+    
+    profile = LLM_for_multimodal[selected_multimodal]
+    bedrock_region =  profile['bedrock_region']
+    modelId = profile['model_id']
+    print(f'LLM: {selected_multimodal}, bedrock_region: {bedrock_region}, modelId: {modelId}')
+    maxOutputTokens = int(profile['maxOutputTokens'])
+                          
+    # bedrock   
+    boto3_bedrock = boto3.client(
+        service_name='bedrock-runtime',
+        region_name=bedrock_region,
+        config=Config(
+            retries = {
+                'max_attempts': 30
+            }
+        )
+    )
+    parameters = {
+        "max_tokens":maxOutputTokens,     
+        "temperature":0.1,
+        "top_k":250,
+        "top_p":0.9,
+        "stop_sequences": [HUMAN_PROMPT]
+    }
+    # print('parameters: ', parameters)
+
+    multimodal = ChatBedrock(   # new chat model
+        model_id=modelId,
+        client=boto3_bedrock, 
+        model_kwargs=parameters,
+    )    
+    
+    selected_multimodal = selected_multimodal + 1
+    if selected_multimodal == len(LLM_for_multimodal):
+        selected_multimodal = 0
+    
+    return multimodal
 
 def get_embedding():
     global selected_embedding
     profile = LLM_for_embedding[selected_embedding]
     bedrock_region =  profile['bedrock_region']
-    print(f'Embedding: {selected_embedding}, bedrock_region: {bedrock_region}')
+    model_id = profile['model_id']
+    print(f'selected_embedding: {selected_embedding}, bedrock_region: {bedrock_region}')
     
     # bedrock   
     boto3_bedrock = boto3.client(
@@ -195,13 +244,12 @@ def get_embedding():
     bedrock_embedding = BedrockEmbeddings(
         client=boto3_bedrock,
         region_name = bedrock_region,
-        model_id = 'amazon.titan-embed-text-v1' 
+        model_id = model_id
     )  
     
-    if selected_embedding >= len(LLM_for_embedding)-1:
+    selected_embedding = selected_embedding + 1
+    if selected_embedding == len(LLM_for_embedding):
         selected_embedding = 0
-    else:
-        selected_embedding = selected_embedding + 1
     
     return bedrock_embedding
 
@@ -1224,8 +1272,7 @@ def get_weather_info(city: str) -> str:
     city = city.replace('\n','')
     city = city.replace('\'','')
     
-    profile_of_LLMs = json.loads(os.environ.get('profile_of_LLMs'))
-    chat = get_chat(profile_of_LLMs, selected_LLM)
+    chat = get_chat()
                 
     if isKorean(city):
         place = traslation(chat, city, "Korean", "English")
@@ -1493,22 +1540,21 @@ def getResponse(connectionId, jsonBody):
     global enableReference
     global map_chain, memory_chain, debugMessageMode, selected_LLM
         
-    profile_of_LLMs = json.loads(os.environ.get('profile_of_LLMs'))
-    print('length of profile: ', len(profile_of_LLMs))
-    print ('selected_LLM: ', selected_LLM)
+    print('length of profile: ', len(LLM_for_chat))
+    print ('selected_chat: ', selected_chat)
     
     # Multi-region LLM
-    if selected_LLM >= len(profile_of_LLMs):
+    if selected_LLM >= len(LLM_for_chat):
         selected_LLM = 0       
-        print ('new selected_LLM: ', selected_LLM) 
+        print ('new LLM_for_chat: ', LLM_for_chat) 
         
-    profile = profile_of_LLMs[selected_LLM]
+    profile = LLM_for_chat[LLM_for_chat]
     bedrock_region =  profile['bedrock_region']
     modelId = profile['model_id']
-    print(f'selected_LLM: {selected_LLM}, bedrock_region: {bedrock_region}, modelId: {modelId}')
+    print(f'LLM_for_chat: {LLM_for_chat}, bedrock_region: {bedrock_region}, modelId: {modelId}')
     # print('profile: ', profile)
     
-    chat = get_chat(profile_of_LLMs, selected_LLM)    
+    chat = get_chat()    
     bedrock_embedding = get_embedding()
 
     # allocate memory
@@ -1749,11 +1795,6 @@ def getResponse(connectionId, jsonBody):
         statusMsg = statusMsg + f"{elapsed_time:.2f}(전체)"
             
         sendResultMessage(connectionId, requestId, msg+reference+statusMsg)
-
-    if selected_LLM >= len(profile_of_LLMs)-1:
-        selected_LLM = 0
-    else:
-        selected_LLM = selected_LLM + 1
 
     return msg, reference
 

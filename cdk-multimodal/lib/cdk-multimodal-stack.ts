@@ -521,8 +521,6 @@ export class CdkMultimodalStack extends cdk.Stack {
       memorySize: 8192,
       role: roleLambdaWebsocket,
       environment: {
-        // bedrock_region: bedrock_region,
-        // model_id: model_id,
         s3_bucket: s3Bucket.bucketName,
         s3_prefix: s3_prefix,
         callLogTableName: callLogTableName,
@@ -536,7 +534,8 @@ export class CdkMultimodalStack extends cdk.Stack {
         debugMessageMode: debugMessageMode,
         useParallelRAG: useParallelRAG,
         numberOfRelevantDocs: numberOfRelevantDocs,
-        profile_of_LLMs: JSON.stringify(profile_of_LLMs),
+        LLM_for_chat: JSON.stringify(claude3_sonnet_for_workshop),
+        LLM_for_multimodal:JSON.stringify(claude3_sonnet_for_workshop),
         LLM_for_embedding: JSON.stringify(titan_embedding_v1),
         googleApiSecret: googleApiSecret.secretName,
         projectName: projectName
@@ -639,7 +638,6 @@ export class CdkMultimodalStack extends cdk.Stack {
         timeout: cdk.Duration.seconds(600),
         memorySize: 8192,
         environment: {
-          bedrock_region: profile_of_LLMs[i].bedrock_region,
           s3_bucket: s3Bucket.bucketName,
           s3_prefix: s3_prefix,
           opensearch_account: opensearch_account,
@@ -650,7 +648,9 @@ export class CdkMultimodalStack extends cdk.Stack {
           sqsUrl: queueUrl[i],
           max_object_size: String(max_object_size),
           supportedFormat: supportedFormat,
-          profile_of_LLMs: JSON.stringify(profile_of_LLMs),
+          LLM_for_chat: JSON.stringify(claude3_sonnet_for_workshop),
+          LLM_for_multimodal:JSON.stringify(claude3_sonnet_for_workshop),
+          LLM_for_embedding: JSON.stringify(titan_embedding_v1),
           enableParallelSummay: enableParallelSummay
         }
       });         
