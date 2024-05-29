@@ -496,6 +496,9 @@ if len(selected_relevant_docs)==0:  # google api
 
 ![image](https://github.com/kyopark2014/llm-chatbot-using-claude3/assets/52392004/7403e19b-20ca-437b-b2db-725d3c57b4f3)
 
+## LLM Agent의 구현
+
+Agent를 사용하면, 유용한 여러개의 API를 상황에 맞게(context aware) 사용할 수 있습니다. 어떤 상황에 어떤 API를 쓸지는 Agent의 Reasoning을 이용합니다. 상세한 내용은 [LangChain Agent로 한국어 Chatbot 만들기](https://github.com/kyopark2014/llm-agent)을 참조합니다. 
 
 ## 직접 실습 해보기
 
@@ -592,7 +595,9 @@ if len(selected_relevant_docs)==0:  # google api
 
 ![image](https://github.com/kyopark2014/llm-chatbot-using-claude3/assets/52392004/dfa3a8a0-2557-4a2f-9fca-6e531557725d)
 
-### Agent 동작
+### Agent 동작 확인
+
+메뉴에서 Agent-ReAct를 선택합니다. 
 
 "크리스마스까지 몇일 남은 거야?"라고 입력하면 아래와 같이 현재 시간을 기준으로 계산한 날짜를 알려줍니다. 
 
