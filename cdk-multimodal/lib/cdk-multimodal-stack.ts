@@ -33,6 +33,7 @@ const debugMessageMode = 'false'; // if true, debug messages will be delivered t
 const useParallelRAG = 'true';
 const numberOfRelevantDocs = '4';
 const supportedFormat = JSON.stringify(["pdf", "txt", "csv", "pptx", "ppt", "docx", "doc", "xlsx", "py", "js", "md", "jpeg", "jpg", "png"]);  
+const separated_chat_history = 'true';
 
 const max_object_size = 102400000; // 100 MB max size of an object, 50MB(default)
 const enableParallelSummay = 'true';
@@ -538,7 +539,8 @@ export class CdkMultimodalStack extends cdk.Stack {
         LLM_for_multimodal:JSON.stringify(claude3_sonnet_for_workshop),
         LLM_for_embedding: JSON.stringify(titan_embedding_v1),
         googleApiSecret: googleApiSecret.secretName,
-        projectName: projectName
+        projectName: projectName,
+        separated_chat_history: separated_chat_history
       }
     });     
     lambdaChatWebsocket.grantInvoke(new iam.ServicePrincipal('apigateway.amazonaws.com'));  
