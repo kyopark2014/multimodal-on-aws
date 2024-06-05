@@ -28,7 +28,6 @@ s3_client = boto3.client('s3')
 s3_bucket = os.environ.get('s3_bucket') # bucket name
 s3_prefix = os.environ.get('s3_prefix')
 meta_prefix = "metadata/"
-profile_of_LLMs = json.loads(os.environ.get('profile_of_LLMs'))
 enableParallelSummay = os.environ.get('enableParallelSummay')
 enalbeParentDocumentRetrival = os.environ.get('enalbeParentDocumentRetrival')
 
