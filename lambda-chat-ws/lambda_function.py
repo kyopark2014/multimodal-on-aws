@@ -35,6 +35,7 @@ from langchain.agents import AgentExecutor, create_react_agent
 from bs4 import BeautifulSoup
 from pytz import timezone
 from langchain_community.tools.tavily_search import TavilySearchResults
+from opensearchpy import OpenSearch
 
 s3 = boto3.client('s3')
 s3_bucket = os.environ.get('s3_bucket') # bucket name
@@ -51,7 +52,10 @@ doc_prefix = s3_prefix+'/'
 speech_prefix = 'speech/'
 LLM_for_chat = json.loads(os.environ.get('LLM_for_chat'))
 LLM_for_multimodal= json.loads(os.environ.get('LLM_for_multimodal'))
-LLM_for_embedding = json.loads(os.environ.get('LLM_for_embedding'))
+LLM_embedding = json.loads(os.environ.get('LLM_embedding'))
+priorty_search_embedding = json.loads(os.environ.get('priorty_search_embedding'))
+enalbeParentDocumentRetrival = os.environ.get('enalbeParentDocumentRetrival')
+
 selected_chat = 0
 selected_multimodal = 0
 selected_embedding = 0
@@ -226,7 +230,7 @@ def get_multimodal():
 
 def get_embedding():
     global selected_embedding
-    profile = LLM_for_embedding[selected_embedding]
+    profile = LLM_embedding[selected_embedding]
     bedrock_region =  profile['bedrock_region']
     model_id = profile['model_id']
     print(f'selected_embedding: {selected_embedding}, bedrock_region: {bedrock_region}')
@@ -249,10 +253,40 @@ def get_embedding():
     )  
     
     selected_embedding = selected_embedding + 1
-    if selected_embedding == len(LLM_for_embedding):
+    if selected_embedding == len(LLM_embedding):
         selected_embedding = 0
     
     return bedrock_embedding
+
+def get_ps_embedding():
+    global selected_ps_embedding
+    profile = priorty_search_embedding[selected_ps_embedding]
+    bedrock_region =  profile['bedrock_region']
+    model_id = profile['model_id']
+    print(f'selected_ps_embedding: {selected_ps_embedding}, bedrock_region: {bedrock_region}, model_id: {model_id}')
+    
+    # bedrock   
+    boto3_bedrock = boto3.client(
+        service_name='bedrock-runtime',
+        region_name=bedrock_region, 
+        config=Config(
+            retries = {
+                'max_attempts': 30
+            }
+        )
+    )
+    
+    bedrock_ps_embedding = BedrockEmbeddings(
+        client=boto3_bedrock,
+        region_name = bedrock_region,
+        model_id = model_id
+    )  
+    
+    selected_ps_embedding = selected_ps_embedding + 1
+    if selected_ps_embedding == len(priorty_search_embedding):
+        selected_ps_embedding = 0
+    
+    return bedrock_ps_embedding
 
 def sendMessage(id, body):
     try:
@@ -994,6 +1028,66 @@ def get_reference(docs):
                            
     return reference
 
+def get_documents_from_opensearch(vectorstore_opensearch, query, top_k):
+    result = vectorstore_opensearch.similarity_search_with_score(
+        query = query,
+        k = top_k*2,  
+        pre_filter={"doc_level": {"$eq": "child"}}
+    )
+    print('result: ', result)
+            
+    relevant_documents = []
+    docList = []
+    for re in result:
+        if 'parent_doc_id' in re[0].metadata:
+            parent_doc_id = re[0].metadata['parent_doc_id']
+            doc_level = re[0].metadata['doc_level']
+            print(f"doc_level: {doc_level}, parent_doc_id: {parent_doc_id}")
+                    
+            if doc_level == 'child':
+                if parent_doc_id in docList:
+                    print('duplicated!')
+                else:
+                    relevant_documents.append(re)
+                    docList.append(parent_doc_id)
+                    
+                    if len(relevant_documents)>=top_k:
+                        break
+                                
+    # print('lexical query result: ', json.dumps(response))
+    print('relevant_documents: ', relevant_documents)
+    
+    return relevant_documents
+
+os_client = OpenSearch(
+    hosts = [{
+        'host': opensearch_url.replace("https://", ""), 
+        'port': 443
+    }],
+    http_compress = True,
+    http_auth=(opensearch_account, opensearch_passwd),
+    use_ssl = True,
+    verify_certs = True,
+    ssl_assert_hostname = False,
+    ssl_show_warn = False,
+)
+
+def get_parent_document(parent_doc_id):
+    response = os_client.get(
+        index="idx-rag", 
+        id = parent_doc_id
+    )
+    
+    source = response['_source']                            
+    # print('parent_doc: ', source['text'])   
+    
+    metadata = source['metadata']    
+    #print('name: ', metadata['name'])   
+    #print('uri: ', metadata['uri'])   
+    #print('doc_level: ', metadata['doc_level']) 
+    
+    return source['text'], metadata['name'], metadata['uri'], metadata['doc_level']    
+
 def retrieve_docs_from_vectorstore(vectorstore_opensearch, query, top_k):
     print(f"query: {query}")
 
@@ -1372,21 +1466,35 @@ def search_by_opensearch(keyword: str) -> str:
     ) 
     
     answer = ""
-    top_k = 2    
-    relevant_documents = vectorstore_opensearch.similarity_search_with_score(
-        query = keyword,
-        k = top_k,
-    )
+    top_k = 2
+    
+    if enalbeParentDocumentRetrival == 'true':
+        relevant_documents = get_documents_from_opensearch(vectorstore_opensearch, keyword, top_k)
 
-    for i, document in enumerate(relevant_documents):
-        print(f'## Document(opensearch-vector) {i+1}: {document}')
+        for i, document in enumerate(relevant_documents):
+            print(f'## Document(opensearch-vector) {i+1}: {document}')
+            
+            parent_doc_id = document[0].metadata['parent_doc_id']
+            doc_level = document[0].metadata['doc_level']
+            print(f"child: parent_doc_id: {parent_doc_id}, doc_level: {doc_level}")
+                
+            excerpt, name, uri, doc_level = get_parent_document(parent_doc_id) # use pareant document
+            print(f"parent: name: {name}, uri: {uri}, doc_level: {doc_level}")
+            
+            answer = answer + f"{excerpt}, URL: {uri}\n\n"
+    else: 
+        relevant_documents = vectorstore_opensearch.similarity_search_with_score(
+            query = keyword,
+            k = top_k,
+        )
 
-        excerpt = document[0].page_content     
-        uri = ""
-        if "uri" in document[0].metadata:   
+        for i, document in enumerate(relevant_documents):
+            print(f'## Document(opensearch-vector) {i+1}: {document}')
+            
+            excerpt = document[0].page_content        
             uri = document[0].metadata['uri']
-                    
-        answer = answer + f"{excerpt}, URL: {uri}\n\n"
+                            
+            answer = answer + f"{excerpt}, URL: {uri}\n\n"
     
     return answer
 

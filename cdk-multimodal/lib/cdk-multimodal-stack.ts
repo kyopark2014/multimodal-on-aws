@@ -33,10 +33,11 @@ const debugMessageMode = 'false'; // if true, debug messages will be delivered t
 const useParallelRAG = 'true';
 const numberOfRelevantDocs = '4';
 const supportedFormat = JSON.stringify(["pdf", "txt", "csv", "pptx", "ppt", "docx", "doc", "xlsx", "py", "js", "md", "jpeg", "jpg", "png"]);  
-const separated_chat_history = 'true';
 
 const max_object_size = 102400000; // 100 MB max size of an object, 50MB(default)
 const enableParallelSummay = 'true';
+const separated_chat_history = 'true';
+const enalbeParentDocumentRetrival = 'true';
 
 const claude3_sonnet_for_workshop = [
   {
@@ -55,7 +56,15 @@ const titan_embedding_v1 = [
   }
 ];
 
-const profile_of_LLMs = claude3_sonnet_for_workshop;
+const titan_embedding_v2 = [
+  {
+    "bedrock_region": "us-west-2", // Oregon
+    "model_type": "titan",
+    "model_id": "amazon.titan-embed-text-v2"
+  }
+];
+
+const LLM_embedding = titan_embedding_v2;
 
 export class CdkMultimodalStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -537,10 +546,12 @@ export class CdkMultimodalStack extends cdk.Stack {
         numberOfRelevantDocs: numberOfRelevantDocs,
         LLM_for_chat: JSON.stringify(claude3_sonnet_for_workshop),
         LLM_for_multimodal:JSON.stringify(claude3_sonnet_for_workshop),
-        LLM_for_embedding: JSON.stringify(titan_embedding_v1),
+        LLM_embedding: JSON.stringify(titan_embedding_v2),
+        priorty_search_embedding: JSON.stringify(titan_embedding_v1),
         googleApiSecret: googleApiSecret.secretName,
         projectName: projectName,
-        separated_chat_history: separated_chat_history
+        separated_chat_history: separated_chat_history,
+        enalbeParentDocumentRetrival: enalbeParentDocumentRetrival    
       }
     });     
     lambdaChatWebsocket.grantInvoke(new iam.ServicePrincipal('apigateway.amazonaws.com'));  
@@ -600,7 +611,7 @@ export class CdkMultimodalStack extends cdk.Stack {
     // SQS for S3 event (fifo) 
     let queueUrl:string[] = [];
     let queue:any[] = [];
-    for(let i=0;i<profile_of_LLMs.length;i++) {
+    for(let i=0;i<LLM_embedding.length;i++) {
       queue[i] = new sqs.Queue(this, 'QueueS3EventFifo'+i, {
         visibilityTimeout: cdk.Duration.seconds(600),
         queueName: `queue-s3-event-for-${projectName}-${i}.fifo`,  
@@ -622,16 +633,16 @@ export class CdkMultimodalStack extends cdk.Stack {
       timeout: cdk.Duration.seconds(60),      
       environment: {
         sqsFifoUrl: JSON.stringify(queueUrl),
-        nqueue: String(profile_of_LLMs.length)
+        nqueue: String(LLM_embedding.length)
       }
     });
-    for(let i=0;i<profile_of_LLMs.length;i++) {
+    for(let i=0;i<LLM_embedding.length;i++) {
       queue[i].grantSendMessages(lambdaS3eventManager); // permision for SQS putItem
     }
 
     // Lambda for document manager
     let lambdDocumentManager:any[] = [];
-    for(let i=0;i<profile_of_LLMs.length;i++) {
+    for(let i=0;i<LLM_embedding.length;i++) {
       lambdDocumentManager[i] = new lambda.DockerImageFunction(this, `lambda-document-manager-for-${projectName}-${i}`, {
         description: 'S3 document manager',
         functionName: `lambda-document-manager-for-${projectName}-${i}`,
@@ -652,8 +663,9 @@ export class CdkMultimodalStack extends cdk.Stack {
           supportedFormat: supportedFormat,
           LLM_for_chat: JSON.stringify(claude3_sonnet_for_workshop),
           LLM_for_multimodal:JSON.stringify(claude3_sonnet_for_workshop),
-          LLM_for_embedding: JSON.stringify(titan_embedding_v1),
-          enableParallelSummay: enableParallelSummay
+          LLM_embedding: JSON.stringify(titan_embedding_v2),
+          enableParallelSummay: enableParallelSummay,
+          enalbeParentDocumentRetrival: enalbeParentDocumentRetrival
         }
       });         
       s3Bucket.grantReadWrite(lambdDocumentManager[i]); // permission for s3
