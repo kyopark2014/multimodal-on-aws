@@ -1095,12 +1095,16 @@ def retrieve_docs_from_vectorstore(vectorstore_opensearch, query, top_k):
     relevant_docs = []
             
     # vector search (semantic) 
-    relevant_documents = vectorstore_opensearch.similarity_search_with_score(
-        query = query,
-        k = top_k,
-    )
-    #print('(opensearch score) relevant_documents: ', relevant_documents)
-
+    if enalbeParentDocumentRetrival=='true':
+        relevant_documents = get_documents_from_opensearch(vectorstore_opensearch, query, top_k)
+                
+    else:
+        relevant_documents = vectorstore_opensearch.similarity_search_with_score(
+            query = query,
+            k = top_k,
+        )
+        #print('(opensearch score) relevant_documents: ', relevant_documents)
+        
     for i, document in enumerate(relevant_documents):
         #print('document.page_content:', document.page_content)
         #print('document.metadata:', document.metadata)
@@ -1119,6 +1123,12 @@ def retrieve_docs_from_vectorstore(vectorstore_opensearch, query, top_k):
         excerpt = document[0].page_content
         confidence = str(document[1])
         assessed_score = str(document[1])
+        
+        parent_doc_id = doc_level = ""            
+        if enalbeParentDocumentRetrival == 'true':
+            parent_doc_id = document[0].metadata['parent_doc_id']
+            doc_level = document[0].metadata['doc_level']
+            excerpt, name, uri, doc_level = get_parent_document(parent_doc_id) # use pareant document
 
         if page:
             print('page: ', page)
@@ -1132,7 +1142,9 @@ def retrieve_docs_from_vectorstore(vectorstore_opensearch, query, top_k):
                     "translated_excerpt": "",
                     "document_attributes": {
                         "_excerpt_page_number": page
-                    }
+                    },
+                    "parent_doc_id": parent_doc_id,
+                    "doc_level": doc_level  
                 },
                 "assessed_score": assessed_score,
             }
@@ -1144,7 +1156,9 @@ def retrieve_docs_from_vectorstore(vectorstore_opensearch, query, top_k):
                     "source": uri,
                     "title": name,
                     "excerpt": excerpt,
-                    "translated_excerpt": ""
+                    "translated_excerpt": "",
+                    "parent_doc_id": parent_doc_id,
+                    "doc_level": doc_level  
                 },
                 "assessed_score": assessed_score,
             }
