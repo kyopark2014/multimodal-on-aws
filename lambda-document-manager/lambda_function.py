@@ -38,7 +38,7 @@ sqsUrl = os.environ.get('sqsUrl')
 doc_prefix = s3_prefix+'/'
 LLM_for_chat = json.loads(os.environ.get('LLM_for_chat'))
 LLM_for_multimodal= json.loads(os.environ.get('LLM_for_multimodal'))
-LLM_for_embedding = json.loads(os.environ.get('LLM_for_embedding'))
+LLM_embedding = json.loads(os.environ.get('LLM_embedding'))
 selected_chat = 0
 selected_multimodal = 0
 selected_embedding = 0
@@ -169,7 +169,7 @@ def get_multimodal():
 
 def get_embedding():
     global selected_embedding
-    profile = LLM_for_embedding[selected_embedding]
+    profile = LLM_embedding[selected_embedding]
     bedrock_region =  profile['bedrock_region']
     model_id = profile['model_id']
     print(f'selected_embedding: {selected_embedding}, bedrock_region: {bedrock_region}')
@@ -192,7 +192,7 @@ def get_embedding():
     )  
     
     selected_embedding = selected_embedding + 1
-    if selected_embedding == len(LLM_for_embedding):
+    if selected_embedding == len(LLM_embedding):
         selected_embedding = 0
     
     return bedrock_embedding
