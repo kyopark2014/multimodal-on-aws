@@ -945,7 +945,7 @@ def readStreamMsg(connectionId, requestId, stream):
     # print('msg: ', msg)
     return msg
 
-def priority_search(query, relevant_docs, bedrock_embedding, minSimilarity):
+def priority_search(query, relevant_docs, minSimilarity):
     excerpts = []
     for i, doc in enumerate(relevant_docs):
         # print('doc: ', doc)
@@ -967,7 +967,7 @@ def priority_search(query, relevant_docs, bedrock_embedding, minSimilarity):
         )  
     print('excerpts: ', excerpts)
 
-    embeddings = bedrock_embedding
+    embeddings = get_ps_embedding()
     vectorstore_confidence = FAISS.from_documents(
         excerpts,  # documents
         embeddings  # embeddings
@@ -1232,7 +1232,7 @@ def retrieve_docs_from_RAG(revised_question, connectionId, requestId, bedrock_em
     selected_relevant_docs = []
     if len(relevant_docs)>=1:
         print('start priority search')
-        selected_relevant_docs = priority_search(revised_question, relevant_docs, bedrock_embedding, minDocSimilarity)
+        selected_relevant_docs = priority_search(revised_question, relevant_docs, minDocSimilarity)
         print('selected_relevant_docs: ', json.dumps(selected_relevant_docs))
         
         if len(selected_relevant_docs)==0:  # google api
@@ -1270,7 +1270,7 @@ def retrieve_docs_from_RAG(revised_question, connectionId, requestId, bedrock_em
                         relevant_docs.append(doc_info)           
                 
                 if len(relevant_docs)>=1:
-                    selected_relevant_docs = priority_search(revised_question, relevant_docs, bedrock_embedding, minDocSimilarity)
+                    selected_relevant_docs = priority_search(revised_question, relevant_docs, minDocSimilarity)
                     print('selected_relevant_docs: ', json.dumps(selected_relevant_docs))
                     # print('selected_relevant_docs (google): ', selected_relevant_docs)     
             except Exception:
