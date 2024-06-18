@@ -99,6 +99,93 @@ def readStreamMsg(connectionId, requestId, stream):
     return msg
 ```
 
+### 서버리스 기반으로 WebSocket 연결하기
+
+#### Client
+
+[Client](./html/chat.js)는 서버리스인 API Gateway를 이용하여 [WebSocket과 연결](https://docs.aws.amazon.com/ko_kr/apigateway/latest/developerguide/apigateway-WebSocket-api-overview.html)합니다. 이때 client가 연결하는 endpoint는 API Gateway 주소입니다. 아래와 같이 WebSocket을 선언한 후에 onmessage로 메시지가 들어오면, event의 'data'에서 메시지를 추출합니다. 세션을 유지하기 위해 일정간격으로 keep alive 동작을 수행합니다. 
+
+```java
+const ws = new WebSocket(endpoint);
+
+ws.onmessage = function (event) {        
+    response = JSON.parse(event.data)
+
+    if(response.request_id) {
+        addReceivedMessage(response.request_id, response.msg);
+    }
+};
+
+ws.onopen = function () {
+    isConnected = true;
+    if(type == 'initial')
+        setInterval(ping, 57000); 
+};
+
+ws.onclose = function () {
+    isConnected = false;
+    ws.close();
+};
+```
+
+발신 메시지는 JSON 포맷으로 아래와 같이 userId, 요청시간, 메시지 타입과 메시지를 포함합니다. 발신시 [WebSocket의 send()](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket/send)을 이용하여 아래와 같이 발신합니다. 만약 발신시점에 세션이 연결되어 있지 않다면 연결하고 재시도하도록 알림을 표시합니다.
+
+```java
+sendMessage({
+    "user_id": userId,
+    "request_id": requestId,
+    "request_time": requestTime,        
+    "type": "text",
+    "body": message.value
+})
+
+WebSocket = connect(endpoint, 'initial');
+function sendMessage(message) {
+    if(!isConnected) {
+        WebSocket = connect(endpoint, 'reconnect');
+        
+        addNotifyMessage("재연결중입니다. 잠시후 다시시도하세요.");
+    }
+    else {
+        WebSocket.send(JSON.stringify(message));     
+    }     
+}
+```
+
+#### Server 
+
+```python
+connection_url = os.environ.get('connection_url')
+client = boto3.client('apigatewaymanagementapi', endpoint_url=connection_url)
+
+def sendMessage(id, body):
+    try:
+        client.post_to_connection(
+            ConnectionId=id, 
+            Data=json.dumps(body)
+        )
+    except Exception:
+        err_msg = traceback.format_exc()
+        print('err_msg: ', err_msg)
+        raise Exception ("Not able to send a message")
+
+def lambda_handler(event, context):
+    if event['requestContext']: 
+        connectionId = event['requestContext']['connectionId']        
+        routeKey = event['requestContext']['routeKey']
+        
+        if routeKey == '$connect':
+            print('connected!')
+        elif routeKey == '$disconnect':
+            print('disconnected!')
+        else:
+            body = event.get("body", "")
+            if body[0:8] == "__ping__":  # keep alive
+                sendMessage(connectionId, "__pong__")
+            else:
+                msg, reference = getResponse(connectionId, jsonBody) # 메시지 처리
+```
+
 ### Multimodal 활용
 
 Claude3은 Multimodal을 지원하므로 이미지에 대한 분석을 할 수 있습니다. LangChain의 ChatBedrock을 이용하여 Multimodel을 활용합니다. 이후 아래와 같이 Base64로 된 이미지를 이용해 query를 수행하면 이미지에 대한 설명을 얻을 수 있습니다. Sonnet에서 처리할 수 있는 이미지의 크기 제한으로 resize를 수행하여야 합니다. 
