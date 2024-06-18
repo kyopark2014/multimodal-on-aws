@@ -86,7 +86,7 @@ cdk deploy --all
 
 [Secret Console](https://us-west-2.console.aws.amazon.com/secretsmanager/secret?name=googl_api_key&region=us-west-2)에 접속하여 [Retrieve secret value]를 선택하여, google_api_key와 google_cse_id를 업데이트합니다.
 
-10) API에 대한 Credential을 획득하고 입력합니다.
+10) [Option] API에 대한 Credential을 획득하고 입력합니다.
 
 - 일반 검색을 위하여 [Tavily Search](https://app.tavily.com/sign-in)에 접속하여 가입 후 API Key를 발급합니다. 이것은 tvly-로 시작합니다.
 - 날씨 검색을 위하여 [openweathermap](https://home.openweathermap.org/api_keys)에 접속하여 API Key를 발급합니다.
