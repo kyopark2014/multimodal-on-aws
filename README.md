@@ -434,6 +434,11 @@ def delete_document_if_exist(metadata_key):
         raise Exception ("Not able to create meta file")
 ```
 
+### OpenSearch에서 Parent/Child Chunking 
+
+문서를 크기에 따라 parent chunk와 child chunk로 나누어서 child chunk를 찾은후에 LLM의 context에는 parent chunk를 사용하면, 검색의 정확도는 높이고 충분한 문서를 context로 활용할 수 있습니다. 상세한 내용은 [parent-document-retrieval.md](https://github.com/kyopark2014/korean-chatbot-using-amazon-bedrock/blob/main/parent-document-retrieval.md)을 참조합니다.
+
+
 ### Google Search API 활용
 
 Google Search API를 활용하기 위해서는 [google_api_key](https://developers.google.com/custom-search/docs/paid_element?hl=ko#api_key)와 [google_cse_id](https://programmablesearchengine.google.com/controlpanel/create?hl=ko)가 필요합니다. 이 값을 코드에 하드코딩하지 않기 위하여 AWS Secret Manager를 이용합니다. 아래와 같이 google_api_key와 google_cse_id을 가져옵니다. 
