@@ -434,7 +434,7 @@ def delete_document_if_exist(metadata_key):
         raise Exception ("Not able to create meta file")
 ```
 
-### OpenSearch에서 Parent/Child Chunking 
+### OpenSearch에서 Parent/Child Chunking 활용하기
 
 문서를 크기에 따라 parent chunk와 child chunk로 나누어서 child chunk를 찾은후에 LLM의 context에는 parent chunk를 사용하면, 검색의 정확도는 높이고 충분한 문서를 context로 활용할 수 있습니다. 상세한 내용은 [parent-document-retrieval.md](https://github.com/kyopark2014/korean-chatbot-using-amazon-bedrock/blob/main/parent-document-retrieval.md)을 참조합니다.
 
@@ -505,10 +505,6 @@ if len(selected_relevant_docs)==0:  # google api
 
 [LLM Agent](https://github.com/kyopark2014/llm-agent)와 같이, 다양한 API를 이용하기 위하여 Agent를 이용할 수 있습니다. 메뉴에서 ReAct나 ReAct chat을 이용해 기능을 확인할 수 있습니다.
 
-
-### Parent Document Retrieval
-
-RAG의 검색정확도를 향상시키기 위한 여러가지 방법중에 Parent/Child Chunking을 이용할 수 있습니다. [Parent Document Retrieval](https://github.com/kyopark2014/korean-chatbot-using-amazon-bedrock/blob/main/parent-document-retrieval.md)에서는 parent/child로 chunking 전략을 달리하는 방법에 대해 설명합니다. 
 
 
 ## 직접 실습 해보기
