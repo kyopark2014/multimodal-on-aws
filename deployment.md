@@ -78,7 +78,7 @@ cdk deploy --all
 ![image](https://github.com/kyopark2014/multimodal-on-aws/assets/52392004/ac12f567-024f-4ad1-8d14-2452d9c68041)
 
 
-9) Google API Key Update하기
+9) [Option] Google API Key Update하기
 
 [api_key](https://developers.google.com/custom-search/docs/paid_element?hl=ko#api_key)에서 [키 가져오기] - [Select or create project]를 선택하여 Google API Key를 가져옵니다. 만약 기존 키가 없다면 새로 생성합니다.
 
@@ -86,4 +86,13 @@ cdk deploy --all
 
 [Secret Console](https://us-west-2.console.aws.amazon.com/secretsmanager/secret?name=googl_api_key&region=us-west-2)에 접속하여 [Retrieve secret value]를 선택하여, google_api_key와 google_cse_id를 업데이트합니다.
 
-10) Output의 WebUrlforllmmultimodalonaws 복사하여 브라우저로 접속합니다.
+10) API에 대한 Credential을 획득하고 입력합니다.
+
+- 일반 검색을 위하여 [Tavily Search](https://app.tavily.com/sign-in)에 접속하여 가입 후 API Key를 발급합니다. 이것은 tvly-로 시작합니다.
+- 날씨 검색을 위하여 [openweathermap](https://home.openweathermap.org/api_keys)에 접속하여 API Key를 발급합니다.
+- [langsmith.md](https://github.com/kyopark2014/llm-agent/blob/main/langsmith.md)를 참조하여 [LangSmith](https://www.langchain.com/langsmith)에 가입후 API Key를 발급 받습니다.
+
+[Secret manger](https://us-west-2.console.aws.amazon.com/secretsmanager/listsecrets?region=us-west-2)에 접속하여, [openweathermap](https://us-west-2.console.aws.amazon.com/secretsmanager/secret?name=openweathermap-multimodal-on-aws&region=us-west-2), [tavilyapikey](https://us-west-2.console.aws.amazon.com/secretsmanager/secret?name=tavilyapikey-multimodal-on-aws&region=us-west-2), [langsmithapikey](https://us-west-2.console.aws.amazon.com/secretsmanager/secret?name=langsmithapikey-multimodal-on-aws&region=us-west-2)에 접속하여, [Retrieve secret value]를 선택 후, api key를 입력합니다.
+
+
+11) Output의 WebUrlforllmmultimodalonaws 복사하여 브라우저로 접속합니다.
