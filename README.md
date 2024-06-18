@@ -154,6 +154,8 @@ function sendMessage(message) {
 
 #### Server 
 
+Client로 부터 메시지 수신은 Lambda로 전달된 event에서 connectionId와 routeKey를 이용해 수행합니다. 이때 keep alive 동작을 수행하여 세션을 유지합니다. 메시지 발신은 boto3로 "apigatewaymanagementapi"로 client를 정의한 후에 client.post_to_connection()로 전송합니다. 
+
 ```python
 connection_url = os.environ.get('connection_url')
 client = boto3.client('apigatewaymanagementapi', endpoint_url=connection_url)
