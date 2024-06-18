@@ -52,6 +52,53 @@ chat = ChatBedrock(
     )      
 ```
 
+### Chat Basic
+
+아래는 가장 일반적인 chatbot을 위한 prompt입니다. chatbot의 이름을 지정하고 Role을 부여할 수 있습니다. Chat history는 MessagesPlaceholder()을 이용하여 반영하고, "input"에 질문을 넣은후 stream 방식으로 결과를 Client에 전달합니다. 결과의 metadata에서 사용한 토큰수에 대한 정보를 확인할 수 있습니다. 
+
+```python
+system = (
+    "다음의 Human과 Assistant의 친근한 이전 대화입니다. Assistant은 상황에 맞는 구체적인 세부 정보를 충분히 제공합니다. Assistant의 이름은 서연이고, 모르는 질문을 받으면 솔직히 모른다고 말합니다."
+)
+
+human = "{input}"
+
+prompt = ChatPromptTemplate.from_messages([("system", system), MessagesPlaceholder(variable_name="history"), ("human", human)])
+
+history = memory_chain.load_memory_variables({})["chat_history"]
+        
+chain = prompt | chat    
+try: 
+    isTyping(connectionId, requestId)  
+    stream = chain.invoke(
+    {
+        "history": history,
+        "input": query,
+    }
+)
+
+msg = readStreamMsg(connectionId, requestId, stream.content)    
+                    
+usage = stream.response_metadata['usage']
+print('prompt_tokens: ', usage['prompt_tokens'])
+print('completion_tokens: ', usage['completion_tokens'])
+print('total_tokens: ', usage['total_tokens'])
+
+def readStreamMsg(connectionId, requestId, stream):
+    msg = ""
+    if stream:
+        for event in stream:
+            msg = msg + event
+
+            result = {
+                'request_id': requestId,
+                'msg': msg,
+                'status': 'proceeding'
+            }
+            sendMessage(connectionId, result)
+    return msg
+```
+
 ### Multimodal 활용
 
 Claude3은 Multimodal을 지원하므로 이미지에 대한 분석을 할 수 있습니다. LangChain의 ChatBedrock을 이용하여 Multimodel을 활용합니다. 이후 아래와 같이 Base64로 된 이미지를 이용해 query를 수행하면 이미지에 대한 설명을 얻을 수 있습니다. Sonnet에서 처리할 수 있는 이미지의 크기 제한으로 resize를 수행하여야 합니다. 
@@ -198,20 +245,6 @@ def query_using_RAG_context(connectionId, requestId, chat, context, revised_ques
     )
     msg = readStreamMsg(connectionId, requestId, stream.content)    
 
-    return msg
-
-def readStreamMsg(connectionId, requestId, stream):
-    msg = ""
-    if stream:
-        for event in stream:
-            msg = msg + event
-
-            result = {
-                'request_id': requestId,
-                'msg': msg,
-                'status': 'proceeding'
-            }
-            sendMessage(connectionId, result)
     return msg
 ```
 
