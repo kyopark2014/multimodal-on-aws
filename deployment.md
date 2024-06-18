@@ -92,7 +92,7 @@ cdk deploy --all
 - 날씨 검색을 위하여 [openweathermap](https://home.openweathermap.org/api_keys)에 접속하여 API Key를 발급합니다.
 - [langsmith.md](https://github.com/kyopark2014/llm-agent/blob/main/langsmith.md)를 참조하여 [LangSmith](https://www.langchain.com/langsmith)에 가입후 API Key를 발급 받습니다.
 
-[Secret manger](https://us-west-2.console.aws.amazon.com/secretsmanager/listsecrets?region=us-west-2)에 접속하여, [openweathermap](https://us-west-2.console.aws.amazon.com/secretsmanager/secret?name=openweathermap-llm-multimodal-workshop=us-west-2), [tavilyapikey](https://us-west-2.console.aws.amazon.com/secretsmanager/secret?name=tavilyapikey-llm-multimodal-workshop&region=us-west-2), [langsmithapikey](https://us-west-2.console.aws.amazon.com/secretsmanager/secret?name=langsmithapikey-llm-multimodal-workshop&region=us-west-2)에 접속하여, [Retrieve secret value]를 선택 후, api key를 입력합니다.
+[Secret manger](https://us-west-2.console.aws.amazon.com/secretsmanager/listsecrets?region=us-west-2)에 접속하여, [openweathermap](https://us-west-2.console.aws.amazon.com/secretsmanager/secret?name=tavilyapikey-llm-multimodal-workshop&region=us-west-2), [tavilyapikey](https://us-west-2.console.aws.amazon.com/secretsmanager/secret?name=tavilyapikey-llm-multimodal-workshop&region=us-west-2), [langsmithapikey](https://us-west-2.console.aws.amazon.com/secretsmanager/secret?name=langsmithapikey-llm-multimodal-workshop&region=us-west-2)에 접속하여, [Retrieve secret value]를 선택 후, api key를 입력합니다.
 
 
 11) Output의 WebUrlforllmmultimodalonaws 복사하여 브라우저로 접속합니다.
