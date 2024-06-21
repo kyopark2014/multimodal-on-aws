@@ -305,24 +305,6 @@ function onSend(e) {
             rag_type = 'opensearch',
             function_type = 'rag'
         }
-        else if(conversationType=='normal-claude3') {
-            type = "text",
-            conv_type = 'normal',
-            rag_type = '',
-            function_type = 'normal-claude3'
-        }
-        else if(conversationType=='normal-claude2') {
-            type = "text",
-            conv_type = 'normal',
-            rag_type = '',
-            function_type = 'normal-claude2'
-        }
-        else if(conversationType=='normal-claude_instant') {
-            type = "text",
-            conv_type = 'normal',
-            rag_type = '',
-            function_type = 'normal-claude_instant'
-        }
         else {
             type = "text",
             conv_type = conversationType,
@@ -620,21 +602,9 @@ attachFile.addEventListener('click', function(){
                             console.log(xmlHttp.responseText);
 
                             function_type = 'upload'
-                            if(conversationType=='qa-all') {
-                                conv_type = 'qa',
-                                rag_type = 'all'
-                            }
-                            else if(conversationType=='qa-kendra') {
-                                conv_type = 'qa',
-                                rag_type = 'kendra'
-                            }
-                            else if(conversationType=='qa-opensearch') {
+                            if(conversationType=='qa-opensearch') {
                                 conv_type = 'qa',
                                 rag_type = 'opensearch'
-                            }
-                            else if(conversationType=='qa-faiss') {
-                                conv_type = 'qa',
-                                rag_type = 'faiss'
                             }
                             else {
                                 conv_type = conversationType,
