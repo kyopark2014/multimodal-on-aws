@@ -429,6 +429,7 @@ def delete_document_if_exist(metadata_key):
         raise Exception ("Not able to create meta file")
              
 # load documents from s3 for pdf and txt
+from pptx.enum.shapes import MSO_SHAPE_TYPE
 def load_document(file_type, key):
     s3r = boto3.resource("s3")
     doc = s3r.Object(s3_bucket, key)
@@ -467,7 +468,9 @@ def load_document(file_type, key):
             # image
             for i, slide in enumerate(prs.slides):
                 for shape in slide.shapes:
-                    if shape.has_image:
+                    print('shape type: ', shape.shape_type)
+                    if shape.shape_type == MSO_SHAPE_TYPE.PICTURE:
+                    #if shape.has_image:
                         image = shape.image
                         # image bytes to PIL Image object
                         image_bytes = image.blob
