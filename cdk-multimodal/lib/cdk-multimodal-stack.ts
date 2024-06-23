@@ -213,7 +213,7 @@ export class CdkMultimodalStack extends cdk.Stack {
         masterNodes: 3,
         masterNodeInstanceType: 'r6g.large.search',
         // multiAzWithStandbyEnabled: false,
-        dataNodes: 15,
+        dataNodes: 3,
         dataNodeInstanceType: 'r6g.large.search',        
         // warmNodes: 2,
         // warmInstanceType: 'ultrawarm1.medium.search',
