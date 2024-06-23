@@ -443,17 +443,14 @@ def extract_images_from_ppt(prs, key):
                 pixels.seek(0, 0)
                         
                 # get path from key
-                doc_name = key.split('/')[-1]
-                print('doc_name: ', doc_name)
-                        
-                pos = key.rfind('/')
-                folder = key[:pos]+'/'+doc_name+'/'
+                objectName = (key[key.find(s3_prefix)+len(s3_prefix)+1:len(key)])
+                folder = s3_prefix+'/files/'+objectName+'/'
                 print('folder: ', folder)
                         
                 fname = 'img_'+key.split('/')[-1].split('.')[0]+f"_{picture_count}"  
                 print('fname: ', fname)
                         
-                img_key = 'image/'+folder+fname+'.png'
+                img_key = folder+fname+'.png'
                         
                 response = s3_client.put_object(
                     Bucket=s3_bucket,
