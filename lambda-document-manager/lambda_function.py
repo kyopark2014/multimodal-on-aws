@@ -511,9 +511,13 @@ def load_document(file_type, key):
         import fitz
         doc = fitz.open(stream=Byte_contents, filetype="pdf")
         for i, page in enumerate(doc):
+            print('length of docs: ', len(doc))
+            print('page: ', i)
             for img in page.getImageList():
                 xref = img[0]
                 image = fitz.Pixmap(doc, xref)
+                
+                print('image: ', image)
                 if image.n > 0:
                     pixels = image.getImageData("png")
                     img_key = f"page_{i+1}.png"
@@ -523,6 +527,7 @@ def load_document(file_type, key):
                         ContentType='image/png',
                         Body=pixels
                     )
+                    print('response: ', response)
                     files.append(img_key)
                 
     elif file_type == 'pptx':
