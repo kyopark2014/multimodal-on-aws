@@ -310,7 +310,7 @@ def store_image_for_opensearch(key):
     image_summary = summary[summary.find('<result>')+8:len(summary)-9] # remove <result> tag
     #print('image summary: ', image_summary)
     
-    if len(extracted_text) > 20:
+    if len(extracted_text) > 30:
         contents = f"[이미지 요약]\n{image_summary}\n\n[추출된 텍스트]\n{extracted_text}"
     else:
         contents = f"[이미지 요약]\n{image_summary}"
