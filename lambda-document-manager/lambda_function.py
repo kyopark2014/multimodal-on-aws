@@ -501,8 +501,8 @@ def load_document(file_type, key):
                             'bucket': s3_bucket,
                             'key': img_key,
                             'url': path+img_key,
-                            'original': key,
-                            'img_type': 'png'
+                            'ext': 'png',
+                            'original': key
                         }
                         print('img_meta: ', img_meta)
                         
