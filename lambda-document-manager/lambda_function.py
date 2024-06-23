@@ -463,6 +463,30 @@ def load_document(file_type, key):
                         text = text + shape.text
                 texts.append(text)
             contents = '\n'.join(texts)
+            
+            # image
+            for i, slide in enumerate(prs.slides):
+                for shape in slide.shapes:
+                    if shape.has_image:
+                        image = shape.image
+                        # image bytes to PIL Image object
+                        image_bytes = image.blob
+                        pixels = BytesIO(image_bytes)
+                        pixels.seek(0, 0)
+                        
+                        fname = 'img_'+key.split('/')[-1].split('.')[0]+f"_{i}"  
+                        print('fname: ', fname)
+                        
+                        response = s3_client.put_object(
+                            Bucket=s3_bucket,
+                            Key='image/'+fname+'.png',
+                            ContentType='image/png',
+                            Body=pixels
+                        )
+                        print('response: ', response)
+                        
+                        #img = Image.open(pixels)
+                        #img.save(f"slide_{i}.png")
         except Exception:
                 err_msg = traceback.format_exc()
                 print('err_msg: ', err_msg)
