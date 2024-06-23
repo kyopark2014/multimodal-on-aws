@@ -518,9 +518,10 @@ def load_document(file_type, key):
             contents = '\n'.join(texts)          
             
             if enableImageExtraction == 'true':
-                image_files = extract_images_from_ppt(prs, key)
-                files += image_files
-                  
+                image_files = extract_images_from_ppt(prs, key)                
+                for img in image_files:
+                    files.append(img)
+                    
         except Exception:
                 err_msg = traceback.format_exc()
                 print('err_msg: ', err_msg)
