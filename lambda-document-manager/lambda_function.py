@@ -958,7 +958,7 @@ def lambda_handler(event, context):
                 documentId = get_documentId(key, category)                                
                 print('documentId: ', documentId)
                 
-                ids, files = [] 
+                ids = files = []
                 if file_type == 'pdf' or file_type == 'txt' or file_type == 'md' or file_type == 'csv' or file_type == 'pptx' or file_type == 'docx':
                     ids, files = store_document_for_opensearch(file_type, key)   
                                     
