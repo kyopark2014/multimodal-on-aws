@@ -81,8 +81,18 @@ def delete_document_if_exist(metadata_key):
             ids = json.loads(meta)['ids']
             print('ids: ', ids)
             
+            # delete ids
             result = vectorstore.delete(ids)
-            print('result: ', result)        
+            print('result: ', result)   
+            
+            # delete files 
+            files = json.loads(meta)['files']
+            print('files: ', files)
+            
+            for file in files:
+                s3r.Object(bucket, file).delete()
+                print('delete file: ', file)
+            
         else:
             print('no meta file: ', metadata_key)
             
@@ -214,7 +224,7 @@ vectorstore = OpenSearchVectorSearch(
 
 def store_document_for_opensearch(file_type, key):
     print('upload to opensearch: ', key) 
-    contents = load_document(file_type, key)
+    contents, files = load_document(file_type, key)
     
     if len(contents) == 0:
         print('no contents: ', key)
@@ -234,7 +244,9 @@ def store_document_for_opensearch(file_type, key):
     ))
     print('docs: ', docs)
     
-    return add_to_opensearch(docs, key)    
+    ids = add_to_opensearch(docs, key)    
+    
+    return ids, files
 
 def store_code_for_opensearch(file_type, key):
     codes = load_code(file_type, key)  # number of functions in the code
@@ -444,7 +456,7 @@ def delete_document_if_exist(metadata_key):
 def extract_images_from_ppt(prs, key):
     picture_count = 1
     
-    files = []
+    extracted_image_files = []
     for i, slide in enumerate(prs.slides):
         for shape in slide.shapes:
             print('shape type: ', shape.shape_type)
@@ -488,15 +500,17 @@ def extract_images_from_ppt(prs, key):
                         
                 picture_count += 1
                 
-                files.append(img_key)
+                extracted_image_files.append(img_key)
     
-    print('files: ', files) 
+    print('extracted_image_files: ', extracted_image_files)    
+    return extracted_image_files
              
 # load documents from s3 for pdf and txt
 def load_document(file_type, key):
     s3r = boto3.resource("s3")
     doc = s3r.Object(s3_bucket, key)
     
+    files = []
     contents = ""
     if file_type == 'pdf':
         Byte_contents = doc.get()['Body'].read()
@@ -529,7 +543,8 @@ def load_document(file_type, key):
             contents = '\n'.join(texts)          
             
             if enableImageExtraction == 'true':
-                extract_images_from_ppt(prs, key)
+                image_files = extract_images_from_ppt(prs, key)
+                files.append(image_files)
                   
         except Exception:
                 err_msg = traceback.format_exc()
@@ -561,7 +576,7 @@ def load_document(file_type, key):
                 print('err_msg: ', err_msg)
                 # raise Exception ("Not able to load docx")   
     
-    return contents
+    return contents, files
 
 # load a code file from s3
 def load_code(file_type, key):
@@ -819,7 +834,7 @@ def get_documentId(key, category):
                 
     return documentId
 
-def create_metadata(bucket, key, meta_prefix, s3_prefix, uri, category, documentId, ids):
+def create_metadata(bucket, key, meta_prefix, s3_prefix, uri, category, documentId, ids, files):
     title = key
     timestamp = int(time.time())
 
@@ -832,7 +847,8 @@ def create_metadata(bucket, key, meta_prefix, s3_prefix, uri, category, document
         },
         "Title": title,
         "DocumentId": documentId,      
-        "ids": ids  
+        "ids": ids,
+        "files": files
     }
     print('metadata: ', metadata)
     
@@ -942,9 +958,9 @@ def lambda_handler(event, context):
                 documentId = get_documentId(key, category)                                
                 print('documentId: ', documentId)
                 
-                ids = []                        
+                ids, files = [] 
                 if file_type == 'pdf' or file_type == 'txt' or file_type == 'md' or file_type == 'csv' or file_type == 'pptx' or file_type == 'docx':
-                    ids = store_document_for_opensearch(file_type, key)   
+                    ids, files = store_document_for_opensearch(file_type, key)   
                                     
                 elif file_type == 'py' or file_type == 'js':
                     ids = store_code_for_opensearch(file_type, key)  
@@ -952,7 +968,7 @@ def lambda_handler(event, context):
                 elif file_type == 'png' or file_type == 'jpg' or file_type == 'jpeg':
                     ids = store_image_for_opensearch(key)
                                                                                                          
-                create_metadata(bucket=s3_bucket, key=key, meta_prefix=meta_prefix, s3_prefix=s3_prefix, uri=path+parse.quote(key), category=category, documentId=documentId, ids=ids)
+                create_metadata(bucket=s3_bucket, key=key, meta_prefix=meta_prefix, s3_prefix=s3_prefix, uri=path+parse.quote(key), category=category, documentId=documentId, ids=ids, files=files)
 
             else: # delete if the object is unsupported one for format or size
                 try:
