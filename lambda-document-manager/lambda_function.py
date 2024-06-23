@@ -90,7 +90,7 @@ def delete_document_if_exist(metadata_key):
             print('files: ', files)
             
             for file in files:
-                s3r.Object(bucket, file).delete()
+                s3r.Object(s3_bucket, file).delete()
                 print('delete file: ', file)
             
         else:
@@ -519,7 +519,7 @@ def load_document(file_type, key):
             
             if enableImageExtraction == 'true':
                 image_files = extract_images_from_ppt(prs, key)
-                files.append(image_files)
+                files += image_files
                   
         except Exception:
                 err_msg = traceback.format_exc()
