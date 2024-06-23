@@ -301,20 +301,23 @@ def store_image_for_opensearch(key):
     img_base64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
                                                             
     # extract text from the image
-    chat = get_multimodal()    
+    chat = get_multimodal()
     text = extract_text(chat, img_base64)
     extracted_text = text[text.find('<result>')+8:len(text)-9] # remove <result> tag
-    print('extracted_text: ', extracted_text)
+    #print('extracted_text: ', extracted_text)
     
     summary = summary_image(chat, img_base64)
-    img_summary = summary[summary.find('<result>')+8:len(summary)-9] # remove <result> tag
-    print('extracted_text: ', img_summary)
+    image_summary = summary[summary.find('<result>')+8:len(summary)-9] # remove <result> tag
+    #print('image summary: ', image_summary)
+    
+    contents = f"[추출된 텍스트]\n{extracted_text}\n\n[이미지 요약]\n{image_summary}"
+    print('image contents: ', contents)
     
     docs = []
-    if len(extracted_text)>10:
+    if len(contents)>20:
         docs.append(
             Document(
-                page_content=extracted_text+"\n\n"+img_summary,
+                page_content=contents,
                 metadata={
                     'name': key,
                     # 'page':i+1,
