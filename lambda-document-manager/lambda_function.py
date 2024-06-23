@@ -310,41 +310,49 @@ def store_image_for_opensearch(key):
     if isResized:
         img = img.resize((width, height))
                         
-    buffer = BytesIO()
-    img.save(buffer, format="PNG")
-    img_base64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
-                                                            
-    # extract text from the image
-    chat = get_multimodal()
-    text = extract_text(chat, img_base64)
-    extracted_text = text[text.find('<result>')+8:len(text)-9] # remove <result> tag
-    #print('extracted_text: ', extracted_text)
+    try: 
+        buffer = BytesIO()
+        img.save(buffer, format="PNG")
+        img_base64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
+                                                                
+        # extract text from the image
+        chat = get_multimodal()
+        text = extract_text(chat, img_base64)
+        extracted_text = text[text.find('<result>')+8:len(text)-9] # remove <result> tag
+        #print('extracted_text: ', extracted_text)
+        
+        summary = summary_image(chat, img_base64)
+        image_summary = summary[summary.find('<result>')+8:len(summary)-9] # remove <result> tag
+        #print('image summary: ', image_summary)
+        
+        if len(extracted_text) > 30:
+            contents = f"[이미지 요약]\n{image_summary}\n\n[추출된 텍스트]\n{extracted_text}"
+        else:
+            contents = f"[이미지 요약]\n{image_summary}"
+        print('image contents: ', contents)
+        
+        docs = []
+        if len(contents) > 30:
+            docs.append(
+                Document(
+                    page_content=contents,
+                    metadata={
+                        'name': key,
+                        # 'page':i+1,
+                        'uri': path+parse.quote(key)
+                    }
+                )
+            )                                                                                                            
+        print('docs size: ', len(docs))
+        
+        return add_to_opensearch(docs, key)
     
-    summary = summary_image(chat, img_base64)
-    image_summary = summary[summary.find('<result>')+8:len(summary)-9] # remove <result> tag
-    #print('image summary: ', image_summary)
-    
-    if len(extracted_text) > 30:
-        contents = f"[이미지 요약]\n{image_summary}\n\n[추출된 텍스트]\n{extracted_text}"
-    else:
-        contents = f"[이미지 요약]\n{image_summary}"
-    print('image contents: ', contents)
-    
-    docs = []
-    if len(contents) > 30:
-        docs.append(
-            Document(
-                page_content=contents,
-                metadata={
-                    'name': key,
-                    # 'page':i+1,
-                    'uri': path+parse.quote(key)
-                }
-            )
-        )                                                                                                            
-    print('docs size: ', len(docs))
-    
-    return add_to_opensearch(docs, key)
+    except Exception:
+        err_msg = traceback.format_exc()
+        print('error message: ', err_msg)                
+        #raise Exception ("Not able to summary")  
+        
+        return []
 
 def add_to_opensearch(docs, key):    
     if len(docs) == 0:
