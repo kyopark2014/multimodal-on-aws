@@ -306,11 +306,15 @@ def store_image_for_opensearch(key):
     extracted_text = text[text.find('<result>')+8:len(text)-9] # remove <result> tag
     print('extracted_text: ', extracted_text)
     
+    summary = summary_image(chat, img_base64)
+    img_summary = summary[summary.find('<result>')+8:len(summary)-9] # remove <result> tag
+    print('extracted_text: ', img_summary)
+    
     docs = []
     if len(extracted_text)>10:
         docs.append(
             Document(
-                page_content=extracted_text,
+                page_content=extracted_text+"\n\n"+img_summary,
                 metadata={
                     'name': key,
                     # 'page':i+1,
@@ -732,6 +736,37 @@ def summarize_relevant_codes_using_parallel_processing(codes, key):
 
 def extract_text(chat, img_base64):    
     query = "텍스트를 추출해서 utf8로 변환하세요. <result> tag를 붙여주세요."
+    
+    messages = [
+        HumanMessage(
+            content=[
+                {
+                    "type": "image_url",
+                    "image_url": {
+                        "url": f"data:image/png;base64,{img_base64}", 
+                    },
+                },
+                {
+                    "type": "text", "text": query
+                },
+            ]
+        )
+    ]
+    
+    try: 
+        result = chat.invoke(messages)
+        
+        extracted_text = result.content
+        print('result of text extraction from an image: ', extracted_text)
+    except Exception:
+        err_msg = traceback.format_exc()
+        print('error message: ', err_msg)                    
+        raise Exception ("Not able to request to LLM")
+    
+    return extracted_text
+
+def summary_image(chat, img_base64):    
+    query = "이미지가 의미하는 내용을 풀어서 자세히 알려주세요. <result> tag를 붙여주세요."
     
     messages = [
         HumanMessage(
