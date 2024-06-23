@@ -508,6 +508,23 @@ def load_document(file_type, key):
                 print('err_msg: ', err_msg)
                 # raise Exception ("Not able to load the pdf file")
                 
+        import fitz
+        doc = fitz.open(stream=Byte_contents, filetype="pdf")
+        for i, page in enumerate(doc):
+            for img in page.getImageList():
+                xref = img[0]
+                image = fitz.Pixmap(doc, xref)
+                if image.n > 0:
+                    pixels = image.getImageData("png")
+                    img_key = f"page_{i+1}.png"
+                    response = s3_client.put_object(
+                        Bucket=s3_bucket,
+                        Key=img_key,
+                        ContentType='image/png',
+                        Body=pixels
+                    )
+                    files.append(img_key)
+                
     elif file_type == 'pptx':
         Byte_contents = doc.get()['Body'].read()
             
