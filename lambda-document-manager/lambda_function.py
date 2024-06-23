@@ -510,6 +510,7 @@ def load_document(file_type, key):
                 
         import fitz
         doc = fitz.open(stream=Byte_contents, filetype="pdf")
+        print('doc: ', doc)
         for i, page in enumerate(doc):
             print('length of docs: ', len(doc))
             print('page: ', i)
