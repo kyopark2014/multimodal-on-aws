@@ -474,6 +474,7 @@ def extract_images_from_ppt(prs, key):
                     'key': img_key,
                     'url': path+img_key,
                     'ext': 'png',
+                    'page': i+1,
                     'original': key
                 }
                 print('img_meta: ', img_meta)
