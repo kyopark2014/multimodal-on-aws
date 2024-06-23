@@ -310,11 +310,14 @@ def store_image_for_opensearch(key):
     image_summary = summary[summary.find('<result>')+8:len(summary)-9] # remove <result> tag
     #print('image summary: ', image_summary)
     
-    contents = f"[추출된 텍스트]\n{extracted_text}\n\n[이미지 요약]\n{image_summary}"
+    if len(extracted_text) > 20:
+        contents = f"[이미지 요약]\n{image_summary}\n\n[추출된 텍스트]\n{extracted_text}"
+    else:
+        contents = f"[이미지 요약]\n{image_summary}"
     print('image contents: ', contents)
     
     docs = []
-    if len(contents)>20:
+    if len(contents) > 30:
         docs.append(
             Document(
                 page_content=contents,
@@ -760,7 +763,7 @@ def extract_text(chat, img_base64):
         result = chat.invoke(messages)
         
         extracted_text = result.content
-        print('result of text extraction from an image: ', extracted_text)
+        # print('result of text extraction from an image: ', extracted_text)
     except Exception:
         err_msg = traceback.format_exc()
         print('error message: ', err_msg)                    
@@ -791,7 +794,7 @@ def summary_image(chat, img_base64):
         result = chat.invoke(messages)
         
         extracted_text = result.content
-        print('result of text extraction from an image: ', extracted_text)
+        # print('summary from an image: ', extracted_text)
     except Exception:
         err_msg = traceback.format_exc()
         print('error message: ', err_msg)                    
