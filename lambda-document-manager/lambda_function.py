@@ -228,7 +228,7 @@ def store_document_for_opensearch(file_type, key):
     
     if len(contents) == 0:
         print('no contents: ', key)
-        return [], []
+        return [], files
     
     # contents = str(contents).replace("\n"," ") 
     print('length: ', len(contents))
