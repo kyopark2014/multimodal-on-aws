@@ -435,6 +435,51 @@ def add_to_opensearch(docs, key):
             print('error message: ', err_msg)
             #raise Exception ("Not able to add docs in opensearch")    
     return ids
+
+def extract_images_from_pdf(reader, key):
+    picture_count = 1
+    
+    extracted_image_files = []
+    for i, page in enumerate(reader.pages):
+        for image_byte in page.images:
+            pixels = BytesIO(image_byte)
+            pixels.seek(0, 0)
+                        
+            # get path from key
+            objectName = (key[key.find(s3_prefix)+len(s3_prefix)+1:len(key)])
+            folder = s3_prefix+'/files/'+objectName+'/'
+            print('folder: ', folder)
+                        
+            fname = 'img_'+key.split('/')[-1].split('.')[0]+f"_{picture_count}"  
+            print('fname: ', fname)
+                        
+            img_key = folder+fname+'.png'
+                        
+            response = s3_client.put_object(
+                Bucket=s3_bucket,
+                Key=img_key,
+                ContentType='image/png',
+                Body=pixels
+            )
+            print('response: ', response)
+                        
+            # metadata
+            img_meta = {
+                'bucket': s3_bucket,
+                'key': img_key,
+                'url': path+img_key,
+                'ext': 'png',
+                'page': i+1,
+                'original': key
+            }
+            print('img_meta: ', img_meta)
+                        
+            picture_count += 1
+                
+            extracted_image_files.append(img_key)
+    
+    print('extracted_image_files: ', extracted_image_files)    
+    return extracted_image_files
     
 def extract_images_from_ppt(prs, key):
     picture_count = 1
@@ -503,11 +548,18 @@ def load_document(file_type, key):
             for page in reader.pages:
                 texts.append(page.extract_text())
             contents = '\n'.join(texts)
+            
+            if enableImageExtraction == 'true':
+                image_files = extract_images_from_pdf(reader, key)                
+                for img in image_files:
+                    files.append(img)
+                    
         except Exception:
                 err_msg = traceback.format_exc()
                 print('err_msg: ', err_msg)
                 # raise Exception ("Not able to load the pdf file")
-                
+             
+        """
         import fitz
         doc = fitz.open(stream=Byte_contents, filetype="pdf")
         print('doc: ', doc)
@@ -530,7 +582,7 @@ def load_document(file_type, key):
                     )
                     print('response: ', response)
                     files.append(img_key)
-                
+        """
     elif file_type == 'pptx':
         Byte_contents = doc.get()['Body'].read()
             
