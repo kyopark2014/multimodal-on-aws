@@ -466,6 +466,7 @@ def load_document(file_type, key):
             contents = '\n'.join(texts)
             
             # image
+            picture_count = 1
             for i, slide in enumerate(prs.slides):
                 for shape in slide.shapes:
                     print('shape type: ', shape.shape_type)
@@ -477,7 +478,11 @@ def load_document(file_type, key):
                         pixels = BytesIO(image_bytes)
                         pixels.seek(0, 0)
                         
-                        fname = 'img_'+key.split('/')[-1].split('.')[0]+f"_{i}"  
+                        # get path from key
+                        pos = key.rfind('/')
+                        print('path: ', key[:pos])
+                        
+                        fname = 'img_'+key.split('/')[-1].split('.')[0]+f"_{picture_count}"  
                         print('fname: ', fname)
                         
                         response = s3_client.put_object(
@@ -487,6 +492,17 @@ def load_document(file_type, key):
                             Body=pixels
                         )
                         print('response: ', response)
+                        
+                        # metadata
+                        img_meta = {
+                            'bucket': s3_bucket,
+                            'key': key,
+                            'fname': fname,
+                            'img_type': 'png'
+                        }
+                        print('img_meta: ', img_meta)
+                        
+                        picture_count += 1
                         
                         #img = Image.open(pixels)
                         #img.save(f"slide_{i}.png")
