@@ -22,6 +22,7 @@ from multiprocessing import Process, Pipe
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_aws import ChatBedrock
+from pptx.enum.shapes import MSO_SHAPE_TYPE
 
 sqs = boto3.client('sqs')
 s3_client = boto3.client('s3')  
@@ -429,7 +430,6 @@ def delete_document_if_exist(metadata_key):
         raise Exception ("Not able to create meta file")
              
 # load documents from s3 for pdf and txt
-from pptx.enum.shapes import MSO_SHAPE_TYPE
 def load_document(file_type, key):
     s3r = boto3.resource("s3")
     doc = s3r.Object(s3_bucket, key)
@@ -479,8 +479,11 @@ def load_document(file_type, key):
                         pixels.seek(0, 0)
                         
                         # get path from key
+                        doc_name = key.split('/')[-1]
+                        print('doc_name: ', doc_name)
+                        
                         pos = key.rfind('/')
-                        folder = key[:pos]+'/'
+                        folder = key[:pos]+'/'+doc_name+'/'
                         print('folder: ', folder)
                         
                         fname = 'img_'+key.split('/')[-1].split('.')[0]+f"_{picture_count}"  
