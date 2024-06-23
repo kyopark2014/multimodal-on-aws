@@ -428,31 +428,6 @@ def add_to_opensearch(docs, key):
             #raise Exception ("Not able to add docs in opensearch")    
     return ids
     
-def delete_document_if_exist(metadata_key):
-    try: 
-        s3r = boto3.resource("s3")
-        bucket = s3r.Bucket(s3_bucket)
-        objs = list(bucket.objects.filter(Prefix=metadata_key))
-        print('objs: ', objs)
-        
-        if(len(objs)>0):
-            doc = s3r.Object(s3_bucket, metadata_key)
-            meta = doc.get()['Body'].read().decode('utf-8')
-            print('meta: ', meta)
-            
-            ids = json.loads(meta)['ids']
-            print('ids: ', ids)
-            
-            result = vectorstore.delete(ids)
-            print('result: ', result)        
-        else:
-            print('no meta file: ', metadata_key)
-            
-    except Exception:
-        err_msg = traceback.format_exc()
-        print('error message: ', err_msg)        
-        raise Exception ("Not able to create meta file")
-
 def extract_images_from_ppt(prs, key):
     picture_count = 1
     
