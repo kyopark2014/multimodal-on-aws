@@ -51,6 +51,8 @@ max_object_size = int(os.environ.get('max_object_size'))
 supportedFormat = json.loads(os.environ.get('supportedFormat'))
 print('supportedFormat: ', supportedFormat)
 
+enableImageExtraction = os.environ.get('enableImageExtraction')
+
 os_client = OpenSearch(
     hosts = [{
         'host': opensearch_url.replace("https://", ""), 
@@ -438,6 +440,57 @@ def delete_document_if_exist(metadata_key):
         err_msg = traceback.format_exc()
         print('error message: ', err_msg)        
         raise Exception ("Not able to create meta file")
+
+def extract_images_from_ppt(prs, key):
+    picture_count = 1
+    
+    files = []
+    for i, slide in enumerate(prs.slides):
+        for shape in slide.shapes:
+            print('shape type: ', shape.shape_type)
+            if shape.shape_type == MSO_SHAPE_TYPE.PICTURE:
+                image = shape.image
+                # image bytes to PIL Image object
+                image_bytes = image.blob
+                pixels = BytesIO(image_bytes)
+                pixels.seek(0, 0)
+                        
+                # get path from key
+                doc_name = key.split('/')[-1]
+                print('doc_name: ', doc_name)
+                        
+                pos = key.rfind('/')
+                folder = key[:pos]+'/'+doc_name+'/'
+                print('folder: ', folder)
+                        
+                fname = 'img_'+key.split('/')[-1].split('.')[0]+f"_{picture_count}"  
+                print('fname: ', fname)
+                        
+                img_key = 'image/'+folder+fname+'.png'
+                        
+                response = s3_client.put_object(
+                    Bucket=s3_bucket,
+                    Key=img_key,
+                    ContentType='image/png',
+                    Body=pixels
+                )
+                print('response: ', response)
+                        
+                # metadata
+                img_meta = {
+                    'bucket': s3_bucket,
+                    'key': img_key,
+                    'url': path+img_key,
+                    'ext': 'png',
+                    'original': key
+                }
+                print('img_meta: ', img_meta)
+                        
+                picture_count += 1
+                
+                files.append(img_key)
+    
+    print('files: ', files) 
              
 # load documents from s3 for pdf and txt
 def load_document(file_type, key):
@@ -473,56 +526,11 @@ def load_document(file_type, key):
                     if shape.has_text_frame:
                         text = text + shape.text
                 texts.append(text)
-            contents = '\n'.join(texts)
+            contents = '\n'.join(texts)          
             
-            # image
-            picture_count = 1
-            for i, slide in enumerate(prs.slides):
-                for shape in slide.shapes:
-                    print('shape type: ', shape.shape_type)
-                    if shape.shape_type == MSO_SHAPE_TYPE.PICTURE:
-                    #if shape.has_image:
-                        image = shape.image
-                        # image bytes to PIL Image object
-                        image_bytes = image.blob
-                        pixels = BytesIO(image_bytes)
-                        pixels.seek(0, 0)
-                        
-                        # get path from key
-                        doc_name = key.split('/')[-1]
-                        print('doc_name: ', doc_name)
-                        
-                        pos = key.rfind('/')
-                        folder = key[:pos]+'/'+doc_name+'/'
-                        print('folder: ', folder)
-                        
-                        fname = 'img_'+key.split('/')[-1].split('.')[0]+f"_{picture_count}"  
-                        print('fname: ', fname)
-                        
-                        img_key = 'image/'+folder+fname+'.png'
-                        
-                        response = s3_client.put_object(
-                            Bucket=s3_bucket,
-                            Key=img_key,
-                            ContentType='image/png',
-                            Body=pixels
-                        )
-                        print('response: ', response)
-                        
-                        # metadata
-                        img_meta = {
-                            'bucket': s3_bucket,
-                            'key': img_key,
-                            'url': path+img_key,
-                            'ext': 'png',
-                            'original': key
-                        }
-                        print('img_meta: ', img_meta)
-                        
-                        picture_count += 1
-                        
-                        #img = Image.open(pixels)
-                        #img.save(f"slide_{i}.png")
+            if enableImageExtraction == 'true':
+                extract_images_from_ppt(prs, key)
+                  
         except Exception:
                 err_msg = traceback.format_exc()
                 print('err_msg: ', err_msg)
