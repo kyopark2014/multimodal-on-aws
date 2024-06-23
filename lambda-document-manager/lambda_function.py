@@ -480,14 +480,17 @@ def load_document(file_type, key):
                         
                         # get path from key
                         pos = key.rfind('/')
-                        print('path: ', key[:pos])
+                        folder = key[:pos]+'/'
+                        print('folder: ', folder)
                         
                         fname = 'img_'+key.split('/')[-1].split('.')[0]+f"_{picture_count}"  
                         print('fname: ', fname)
                         
+                        img_key = 'image/'+folder+fname+'.png'
+                        
                         response = s3_client.put_object(
                             Bucket=s3_bucket,
-                            Key='image/'+fname+'.png',
+                            Key=img_key,
                             ContentType='image/png',
                             Body=pixels
                         )
@@ -496,8 +499,9 @@ def load_document(file_type, key):
                         # metadata
                         img_meta = {
                             'bucket': s3_bucket,
-                            'key': path+fname+'.png',
-                            'original_key': key,
+                            'key': img_key,
+                            'url': path+img_key,
+                            'original': key,
                             'img_type': 'png'
                         }
                         print('img_meta: ', img_meta)
@@ -863,7 +867,7 @@ def lambda_handler(event, context):
             size = 0
             try:
                 s3obj = s3_client.get_object(Bucket=bucket, Key=key)
-                print(f"Got object: {s3obj}")        
+                print(f"Got object: {s3obj}")
                 size = int(s3obj['ContentLength'])    
                 
                 #attributes = ['ETag', 'Checksum', 'ObjectParts', 'StorageClass', 'ObjectSize']
