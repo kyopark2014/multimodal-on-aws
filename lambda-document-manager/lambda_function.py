@@ -445,7 +445,14 @@ def extract_images_from_pdf(reader, key):
     for i, page in enumerate(reader.pages):
         for image_file_object in page.images:
             print('image_file_object: ', image_file_object)
-            pixels = BytesIO(image_file_object.data)
+            #pixels = BytesIO(image_file_object.data)
+            image_bytes = image_file_object.data
+            
+            img_name = image_file_object.name
+            print('img_name: ', img_name)
+            ext = img_name.split('.')[-1]
+
+            pixels = BytesIO(image_bytes)
             pixels.seek(0, 0)
                         
             # get path from key
@@ -456,12 +463,31 @@ def extract_images_from_pdf(reader, key):
             fname = 'img_'+key.split('/')[-1].split('.')[0]+f"_{picture_count}"  
             print('fname: ', fname)
                         
-            img_key = folder+fname+'.png'
+            img_key = folder+fname+'.'+ext
+            
+            if ext == 'png':
+                contentType = 'image/png'
+            elif ext == 'jpg' or ext == 'jpeg':
+                contentType = 'image/jpeg'
+            elif ext == 'gif':
+                contentType = 'image/gif'
+            elif ext == 'bmp':
+                contentType = 'image/bmp'
+            elif ext == 'tiff' or ext == 'tif':
+                contentType = 'image/tiff'
+            elif ext == 'svg':
+                contentType = 'image/svg+xml'
+            elif ext == 'webp':
+                contentType = 'image/webp'
+            elif ext == 'ico':
+                contentType = 'image/x-icon'
+            elif ext == 'eps':
+                contentType = 'image/eps'
                         
             response = s3_client.put_object(
                 Bucket=s3_bucket,
                 Key=img_key,
-                ContentType='image/png',
+                ContentType=contentType,
                 Body=pixels
             )
             print('response: ', response)
