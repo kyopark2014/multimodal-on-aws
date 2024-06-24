@@ -580,16 +580,31 @@ def extract_images_from_docx(doc_contents, key):
     for inline_shape in doc_contents.inline_shapes:
         print('inline_shape: ', inline_shape)
         print('inline_shape.type: ', inline_shape.type)
-    
+        
+        document_part = inline_shape.part
+        print('inline_shape.type: ', document_part)
+        
         if inline_shape.type == WD_INLINE_SHAPE_TYPE.PICTURE:
-            # image bytes to PIL Image object
             #image_bytes = shape.image
+            blip = inline_shape._inline.graphic.graphicData.pic.blipFill.blip
+            print('blip: ', blip)
             
-            image = inline_shape.image
-            # image bytes to PIL Image object
-            image_bytes = image.blob
+            rId = inline_shape._inline.graphic.graphicData.pic.blipFill.blip.embed
+            print('rId: ', rId)
+        
+            image_part = document_part.related_parts[rId]
+        
+            filename = image_part.filename
+            print('filename: ', filename)
+        
+            bytes_of_image = image_part.image.blob
+            print('bytes_of_image:', bytes_of_image)
+            
+            #inline_shape._inline
+            #image = inline_shape.image
+            #image_bytes = image.blob
                 
-            pixels = BytesIO(image_bytes)
+            pixels = BytesIO(bytes_of_image)
             pixels.seek(0, 0)
                     
             # get path from key
