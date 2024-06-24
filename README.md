@@ -570,6 +570,9 @@ def delete_document_if_exist(metadata_key):
 
 또한, 이미지 추출을 enable 하기 위해서는 [cdk-korean-chatbot-stack.ts](https://github.com/kyopark2014/korean-chatbot-using-amazon-bedrock/blob/main/cdk-korean-chatbot/lib/cdk-korean-chatbot-stack.ts)를 참조하여 아래의 enableImageExtraction을 'true'로 변경합니다. 이후 [deployment.md](./deployment.md)를 참조하여, 재배포합니다. 
 
+또한, 이미지 추출을 enable 하기 위해서는 [cdk-multimodal-stack.ts](./cdk-multimodal/lib/cdk-multimodal-stack.ts)를 참조하여 아래의 enableImageExtraction을 'true'로 변경합니다. 이후 [deployment.md](./deployment.md)를 참조하여, 재배포합니다. 
+
+
 ```python
 const enableImageExtraction = 'false';
 ```
