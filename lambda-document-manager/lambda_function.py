@@ -447,6 +447,8 @@ def extract_images_from_pdf(reader, key):
         #print('page.images: ', page.images)
         #print('page.images.name: ', page.images.name)
         
+        for image_file_object in page.images:
+            print('image_file_object: ', image_file_object)
         """
         for image_file_object in page.images:
             print('image_file_object: ', image_file_object)
