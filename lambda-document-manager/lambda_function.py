@@ -436,14 +436,16 @@ def add_to_opensearch(docs, key):
             #raise Exception ("Not able to add docs in opensearch")    
     return ids
 
+#def save_to_s3()
 def extract_images_from_pdf(reader, key):
     picture_count = 1
     
     extracted_image_files = []
+    print('pages: ', len(reader.pages))
     for i, page in enumerate(reader.pages):
-        for image_byte in page.images:
-            pixels = BytesIO(image_byte)
-            pixels.seek(0, 0)
+        for pixels in page.images:
+            #pixels = BytesIO(image_bytes)
+            #pixels.seek(0, 0)
                         
             # get path from key
             objectName = (key[key.find(s3_prefix)+len(s3_prefix)+1:len(key)])
