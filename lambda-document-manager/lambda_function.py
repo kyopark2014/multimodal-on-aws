@@ -443,9 +443,9 @@ def extract_images_from_pdf(reader, key):
     extracted_image_files = []
     print('pages: ', len(reader.pages))
     for i, page in enumerate(reader.pages):
-        for pixels in page.images:
-            #pixels = BytesIO(image_bytes)
-            #pixels.seek(0, 0)
+        for image_file_object in page.images:
+            pixels = BytesIO(image_file_object.data)
+            pixels.seek(0, 0)
                         
             # get path from key
             objectName = (key[key.find(s3_prefix)+len(s3_prefix)+1:len(key)])
