@@ -578,40 +578,17 @@ def extract_images_from_docx(doc_contents, key):
     extracted_image_files = []
     
     for inline_shape in doc_contents.inline_shapes:
-        print('inline_shape: ', inline_shape)
-        print('inline_shape.type: ', inline_shape.type)
-        print('inline_shape._inline: ', inline_shape._inline)
-        
-        blip = inline_shape._inline.graphic.graphicData.pic.blipFill.blip
-        print('blip: ', blip)
-            
-        rId = inline_shape._inline.graphic.graphicData.pic.blipFill.blip.embed
-        print('rId: ', rId)
-        
-        print('pic: ', inline_shape._inline.graphic.graphicData)
-            
-        image_part = doc_contents.part.related_parts[rId]
-        print('image_part: ', image_part)
-        
-        #document_part = inline_shape.part
-        #print('inline_shape.part: ', document_part)
-        
+        #print('inline_shape.type: ', inline_shape.type)                
         if inline_shape.type == WD_INLINE_SHAPE_TYPE.PICTURE:
-            #image_bytes = shape.image
-            
-            
-            
+            rId = inline_shape._inline.graphic.graphicData.pic.blipFill.blip.embed
+            print('rId: ', rId)
+        
+            image_part = doc_contents.part.related_parts[rId]
         
             filename = image_part.filename
             print('filename: ', filename)
         
             bytes_of_image = image_part.image.blob
-            print('bytes_of_image:', bytes_of_image)
-            
-            #inline_shape._inline
-            #image = inline_shape.image
-            #image_bytes = image.blob
-                
             pixels = BytesIO(bytes_of_image)
             pixels.seek(0, 0)
                     
@@ -620,15 +597,33 @@ def extract_images_from_docx(doc_contents, key):
             folder = s3_prefix+'/files/'+objectName+'/'
             print('folder: ', folder)
                             
-            fname = 'img_'+key.split('/')[-1].split('.')[0]+f"_{picture_count}"  
-            print('fname: ', fname)
-                            
-            img_key = folder+fname+'.png'
-                            
+            ext = filename.split('.')[-1]            
+            contentType = ""
+            if ext == 'png':
+                contentType = 'image/png'
+            elif ext == 'jpg' or ext == 'jpeg':
+                contentType = 'image/jpeg'
+            elif ext == 'gif':
+                contentType = 'image/gif'
+            elif ext == 'bmp':
+                contentType = 'image/bmp'
+            elif ext == 'tiff' or ext == 'tif':
+                contentType = 'image/tiff'
+            elif ext == 'svg':
+                contentType = 'image/svg+xml'
+            elif ext == 'webp':
+                contentType = 'image/webp'
+            elif ext == 'ico':
+                contentType = 'image/x-icon'
+            elif ext == 'eps':
+                contentType = 'image/eps'
+            # print('contentType: ', contentType)
+                    
+            img_key = folder+filename        
             response = s3_client.put_object(
                 Bucket=s3_bucket,
                 Key=img_key,
-                ContentType='image/png',
+                ContentType=contentType,
                 Body=pixels
             )
             print('response: ', response)
@@ -639,7 +634,6 @@ def extract_images_from_docx(doc_contents, key):
                 'key': img_key,
                 'url': path+img_key,
                 'ext': 'png',
-                'page': i+1,
                 'original': key
             }
             print('img_meta: ', img_meta)
