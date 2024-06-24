@@ -521,7 +521,7 @@ def extract_images_from_pdf(reader, key):
     print('extracted_image_files: ', extracted_image_files)    
     return extracted_image_files
     
-def extract_images_from_ppt(prs, key):
+def extract_images_from_pptx(prs, key):
     picture_count = 1
     
     extracted_image_files = []
@@ -568,6 +568,60 @@ def extract_images_from_ppt(prs, key):
                 picture_count += 1
                 
                 extracted_image_files.append(img_key)
+    
+    print('extracted_image_files: ', extracted_image_files)    
+    return extracted_image_files
+
+def extract_images_from_docx(doc_contents, key):
+    picture_count = 1
+    extracted_image_files = []
+    
+    for shape in doc_contents.inline_shapes:
+        print('shape: ', shape)
+    
+        if shape.type == MSO_SHAPE_TYPE.PICTURE:            
+            # image bytes to PIL Image object
+            #image_bytes = shape.image
+            
+            image = shape.image
+            # image bytes to PIL Image object
+            image_bytes = image.blob
+                
+            pixels = BytesIO(image_bytes)
+            pixels.seek(0, 0)
+                    
+            # get path from key
+            objectName = (key[key.find(s3_prefix)+len(s3_prefix)+1:len(key)])
+            folder = s3_prefix+'/files/'+objectName+'/'
+            print('folder: ', folder)
+                            
+            fname = 'img_'+key.split('/')[-1].split('.')[0]+f"_{picture_count}"  
+            print('fname: ', fname)
+                            
+            img_key = folder+fname+'.png'
+                            
+            response = s3_client.put_object(
+                Bucket=s3_bucket,
+                Key=img_key,
+                ContentType='image/png',
+                Body=pixels
+            )
+            print('response: ', response)
+                            
+            # metadata
+            img_meta = { # not used yet
+                'bucket': s3_bucket,
+                'key': img_key,
+                'url': path+img_key,
+                'ext': 'png',
+                'page': i+1,
+                'original': key
+            }
+            print('img_meta: ', img_meta)
+                            
+            picture_count += 1
+                    
+            extracted_image_files.append(img_key)
     
     print('extracted_image_files: ', extracted_image_files)    
     return extracted_image_files
@@ -621,7 +675,7 @@ def load_document(file_type, key):
             contents = '\n'.join(texts)          
             
             if enableImageExtraction == 'true':
-                image_files = extract_images_from_ppt(prs, key)                
+                image_files = extract_images_from_pptx(prs, key)                
                 for img in image_files:
                     files.append(img)
                     
@@ -630,14 +684,6 @@ def load_document(file_type, key):
                 print('err_msg: ', err_msg)
                 # raise Exception ("Not able to load texts from preseation file")
         
-    elif file_type == 'txt' or file_type == 'md':       
-        try:  
-            contents = doc.get()['Body'].read().decode('utf-8')
-        except Exception:
-            err_msg = traceback.format_exc()
-            print('error message: ', err_msg)        
-            # raise Exception ("Not able to load the file")
-
     elif file_type == 'docx':
         try:
             Byte_contents = doc.get()['Body'].read()                    
@@ -651,14 +697,23 @@ def load_document(file_type, key):
             contents = '\n'.join(texts)            
             # print('contents: ', contents)
             
-            for image in doc_contents.inline_shapes:
-                print('image: ', image)
-                print(f"width: {image.width}, height: {image.height}")
+            if enableImageExtraction == 'true':
+                image_files = extract_images_from_docx(doc_contents, key)                
+                for img in image_files:
+                    files.append(img)
             
         except Exception:
                 err_msg = traceback.format_exc()
                 print('err_msg: ', err_msg)
                 # raise Exception ("Not able to load docx")   
+                
+    elif file_type == 'txt' or file_type == 'md':       
+        try:  
+            contents = doc.get()['Body'].read().decode('utf-8')
+        except Exception:
+            err_msg = traceback.format_exc()
+            print('error message: ', err_msg)        
+            # raise Exception ("Not able to load the file")
     
     return contents, files
 
