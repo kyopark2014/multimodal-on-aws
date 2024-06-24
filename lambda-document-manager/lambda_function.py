@@ -591,7 +591,7 @@ def load_document(file_type, key):
                 texts.append(page.extract_text())
             contents = '\n'.join(texts)
             
-            # file 
+            # extract image file 
             from pypdf import PdfReader
             reader = PdfReader(BytesIO(Byte_contents))
             
@@ -650,6 +650,11 @@ def load_document(file_type, key):
                     # print(f"{i}: {para.text}")        
             contents = '\n'.join(texts)            
             # print('contents: ', contents)
+            
+            for image in doc_contents.inline_shapes:
+                print('image: ', image)
+                print(f"width: {image.width}, height: {image.height}")
+            
         except Exception:
                 err_msg = traceback.format_exc()
                 print('err_msg: ', err_msg)
