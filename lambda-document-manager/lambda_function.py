@@ -578,6 +578,7 @@ def extract_images_from_docx(doc_contents, key):
     
     for shape in doc_contents.inline_shapes:
         print('shape: ', shape)
+        print('shape.type: ', shape.type)
     
         if shape.type == MSO_SHAPE_TYPE.PICTURE:            
             # image bytes to PIL Image object
