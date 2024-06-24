@@ -444,30 +444,17 @@ def extract_images_from_pdf(reader, key):
     print('pages: ', len(reader.pages))
     for i, page in enumerate(reader.pages):
         print('page: ', page)
-        print('page.images: ', page.images)
-        print('page.images.name: ', page.images.name)
+        #print('page.images: ', page.images)
+        #print('page.images.name: ', page.images.name)
         
+        """
         for image_file_object in page.images:
             print('image_file_object: ', image_file_object)
             #pixels = BytesIO(image_file_object.data)
-            image_bytes = image_file_object.data
             
             img_name = image_file_object.name
             print('img_name: ', img_name)
             ext = img_name.split('.')[-1]
-
-            pixels = BytesIO(image_bytes)
-            pixels.seek(0, 0)
-                        
-            # get path from key
-            objectName = (key[key.find(s3_prefix)+len(s3_prefix)+1:len(key)])
-            folder = s3_prefix+'/files/'+objectName+'/'
-            print('folder: ', folder)
-                        
-            fname = 'img_'+key.split('/')[-1].split('.')[0]+f"_{picture_count}"  
-            print('fname: ', fname)
-                        
-            img_key = folder+fname+'.'+ext
             
             if ext == 'png':
                 contentType = 'image/png'
@@ -487,7 +474,22 @@ def extract_images_from_pdf(reader, key):
                 contentType = 'image/x-icon'
             elif ext == 'eps':
                 contentType = 'image/eps'
+                
+            image_bytes = image_file_object.data
+
+            pixels = BytesIO(image_bytes)
+            pixels.seek(0, 0)
                         
+            # get path from key
+            objectName = (key[key.find(s3_prefix)+len(s3_prefix)+1:len(key)])
+            folder = s3_prefix+'/files/'+objectName+'/'
+            print('folder: ', folder)
+                        
+            fname = 'img_'+key.split('/')[-1].split('.')[0]+f"_{picture_count}"  
+            print('fname: ', fname)
+                        
+            img_key = folder+fname+'.'+ext
+            
             response = s3_client.put_object(
                 Bucket=s3_bucket,
                 Key=img_key,
@@ -510,6 +512,7 @@ def extract_images_from_pdf(reader, key):
             picture_count += 1
                 
             extracted_image_files.append(img_key)
+        """
     
     print('extracted_image_files: ', extracted_image_files)    
     return extracted_image_files
@@ -525,6 +528,7 @@ def extract_images_from_ppt(prs, key):
                 image = shape.image
                 # image bytes to PIL Image object
                 image_bytes = image.blob
+                
                 pixels = BytesIO(image_bytes)
                 pixels.seek(0, 0)
                         
