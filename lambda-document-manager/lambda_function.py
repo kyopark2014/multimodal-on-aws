@@ -580,19 +580,27 @@ def extract_images_from_docx(doc_contents, key):
     for inline_shape in doc_contents.inline_shapes:
         print('inline_shape: ', inline_shape)
         print('inline_shape.type: ', inline_shape.type)
+        print('inline_shape._inline: ', inline_shape._inline)
         
-        document_part = inline_shape.part
-        print('inline_shape.type: ', document_part)
+        blip = inline_shape._inline.graphic.graphicData.pic.blipFill.blip
+        print('blip: ', blip)
+            
+        rId = inline_shape._inline.graphic.graphicData.pic.blipFill.blip.embed
+        print('rId: ', rId)
+        
+        print('pic: ', inline_shape._inline.graphic.graphicData)
+            
+        image_part = doc_contents.part.related_parts[rId]
+        print('image_part: ', image_part)
+        
+        #document_part = inline_shape.part
+        #print('inline_shape.part: ', document_part)
         
         if inline_shape.type == WD_INLINE_SHAPE_TYPE.PICTURE:
             #image_bytes = shape.image
-            blip = inline_shape._inline.graphic.graphicData.pic.blipFill.blip
-            print('blip: ', blip)
             
-            rId = inline_shape._inline.graphic.graphicData.pic.blipFill.blip.embed
-            print('rId: ', rId)
-        
-            image_part = document_part.related_parts[rId]
+            
+            
         
             filename = image_part.filename
             print('filename: ', filename)
