@@ -458,7 +458,7 @@ def extract_images_from_pdf(reader, key):
                 continue
             
             extracted_image_files.append(img_name)
-            print('list: ', extracted_image_files)
+            # print('list: ', extracted_image_files)
             
             ext = img_name.split('.')[-1]            
             contentType = ""
@@ -480,7 +480,7 @@ def extract_images_from_pdf(reader, key):
                 contentType = 'image/x-icon'
             elif ext == 'eps':
                 contentType = 'image/eps'
-            print('contentType: ', contentType)
+            # print('contentType: ', contentType)
             
             if contentType:                
                 image_bytes = image_file_object.data
@@ -491,7 +491,7 @@ def extract_images_from_pdf(reader, key):
                 # get path from key
                 objectName = (key[key.find(s3_prefix)+len(s3_prefix)+1:len(key)])
                 folder = s3_prefix+'/files/'+objectName+'/'
-                print('folder: ', folder)
+                # print('folder: ', folder)
                             
                 img_key = folder+img_name
                 
@@ -504,7 +504,7 @@ def extract_images_from_pdf(reader, key):
                 print('response: ', response)
                             
                 # metadata
-                img_meta = {
+                img_meta = {   # not used yet
                     'bucket': s3_bucket,
                     'key': img_key,
                     'url': path+img_key,
@@ -555,7 +555,7 @@ def extract_images_from_ppt(prs, key):
                 print('response: ', response)
                         
                 # metadata
-                img_meta = {
+                img_meta = { # not used yet
                     'bucket': s3_bucket,
                     'key': img_key,
                     'url': path+img_key,
@@ -583,6 +583,7 @@ def load_document(file_type, key):
         Byte_contents = doc.get()['Body'].read()
         
         try: 
+            # text
             reader = PyPDF2.PdfReader(BytesIO(Byte_contents))
             
             texts = []
@@ -590,6 +591,7 @@ def load_document(file_type, key):
                 texts.append(page.extract_text())
             contents = '\n'.join(texts)
             
+            # file 
             from pypdf import PdfReader
             reader = PdfReader(BytesIO(Byte_contents))
             
@@ -602,30 +604,7 @@ def load_document(file_type, key):
                 err_msg = traceback.format_exc()
                 print('err_msg: ', err_msg)
                 # raise Exception ("Not able to load the pdf file")
-             
-        import fitz
-        doc = fitz.open(stream=Byte_contents, filetype="pdf")
-        print('fitz doc: ', doc)
-        for i, page in enumerate(doc):
-            print('length of docs: ', len(doc))
-            print('page: ', i)
-            for img in page.getImageList():
-                xref = img[0]
-                image = fitz.Pixmap(doc, xref)
-                
-                print('image: ', image)
-                if image.n > 0:
-                    pixels = image.getImageData("png")
-                    img_key = f"page_{i+1}.png"
-                    response = s3_client.put_object(
-                        Bucket=s3_bucket,
-                        Key=img_key,
-                        ContentType='image/png',
-                        Body=pixels
-                    )
-                    print('response: ', response)
-                    files.append(img_key)
-        
+                     
     elif file_type == 'pptx':
         Byte_contents = doc.get()['Body'].read()
             
