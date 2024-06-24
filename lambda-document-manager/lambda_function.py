@@ -445,7 +445,7 @@ def extract_images_from_pdf(reader, key):
     for i, page in enumerate(reader.pages):
         print('page: ', page)
         
-        img_list = []
+        
         for image_file_object in page.images:
             print('image_file_object: ', image_file_object)        
             #pixels = BytesIO(image_file_object.data)
@@ -453,12 +453,12 @@ def extract_images_from_pdf(reader, key):
             img_name = image_file_object.name
             print('img_name: ', img_name)
             
-            if img_name in img_list:
+            if img_name in extracted_image_files:
                 print('skip....')
                 continue
             
-            img_list.append(img_name)
-            print('list: ', img_list)
+            extracted_image_files.append(img_name)
+            print('list: ', extracted_image_files)
             
             ext = img_name.split('.')[-1]            
             contentType = ""
@@ -493,10 +493,7 @@ def extract_images_from_pdf(reader, key):
                 folder = s3_prefix+'/files/'+objectName+'/'
                 print('folder: ', folder)
                             
-                fname = 'img_'+key.split('/')[-1].split('.')[0]+f"_{picture_count}"  
-                print('fname: ', fname)
-                            
-                img_key = folder+fname+'.'+ext
+                img_key = folder+img_name
                 
                 response = s3_client.put_object(
                     Bucket=s3_bucket,
