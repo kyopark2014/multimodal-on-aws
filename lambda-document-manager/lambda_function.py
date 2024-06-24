@@ -443,6 +443,10 @@ def extract_images_from_pdf(reader, key):
     extracted_image_files = []
     print('pages: ', len(reader.pages))
     for i, page in enumerate(reader.pages):
+        print('page: ', page)
+        print('page.images: ', page.images)
+        print('page.images.name: ', page.images.name)
+        
         for image_file_object in page.images:
             print('image_file_object: ', image_file_object)
             #pixels = BytesIO(image_file_object.data)
