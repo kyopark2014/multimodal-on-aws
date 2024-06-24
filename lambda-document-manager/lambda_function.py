@@ -588,6 +588,9 @@ def load_document(file_type, key):
                 texts.append(page.extract_text())
             contents = '\n'.join(texts)
             
+            from pypdf import PdfReader
+            reader = PdfReader(BytesIO(Byte_contents))
+            
             if enableImageExtraction == 'true':
                 image_files = extract_images_from_pdf(reader, key)                
                 for img in image_files:
