@@ -437,7 +437,6 @@ def add_to_opensearch(docs, key):
             #raise Exception ("Not able to add docs in opensearch")    
     return ids
 
-#def save_to_s3()
 def extract_images_from_pdf(reader, key):
     picture_count = 1
     
@@ -721,6 +720,7 @@ def load_document(file_type, key):
             contents = '\n'.join(texts)            
             # print('contents: ', contents)
             
+            # Extract images
             if enableImageExtraction == 'true':
                 image_files = extract_images_from_docx(doc_contents, key)                
                 for img in image_files:
