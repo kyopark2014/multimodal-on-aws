@@ -598,10 +598,9 @@ def load_document(file_type, key):
                 print('err_msg: ', err_msg)
                 # raise Exception ("Not able to load the pdf file")
              
-        """
         import fitz
         doc = fitz.open(stream=Byte_contents, filetype="pdf")
-        print('doc: ', doc)
+        print('fitz doc: ', doc)
         for i, page in enumerate(doc):
             print('length of docs: ', len(doc))
             print('page: ', i)
@@ -621,7 +620,7 @@ def load_document(file_type, key):
                     )
                     print('response: ', response)
                     files.append(img_key)
-        """
+        
     elif file_type == 'pptx':
         Byte_contents = doc.get()['Body'].read()
             

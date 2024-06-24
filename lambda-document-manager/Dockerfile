@@ -13,5 +13,6 @@ RUN /var/lang/bin/python3 -m pip install PyPDF2
 RUN /var/lang/bin/python3 -m pip install pycryptodome
 RUN /var/lang/bin/python3 -m pip install python-pptx
 RUN /var/lang/bin/python3 -m pip install python-docx
+RUN /var/lang/bin/python3 -m pip install PyMuPDF
 
 CMD ["lambda_function.lambda_handler"]
