@@ -23,6 +23,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_aws import ChatBedrock
 from pptx.enum.shapes import MSO_SHAPE_TYPE
+from docx.enum.shape import WD_INLINE_SHAPE_TYPE
 
 sqs = boto3.client('sqs')
 s3_client = boto3.client('s3')  
@@ -576,15 +577,15 @@ def extract_images_from_docx(doc_contents, key):
     picture_count = 1
     extracted_image_files = []
     
-    for shape in doc_contents.inline_shapes:
-        print('shape: ', shape)
-        print('shape.type: ', shape.type)
+    for inline_shape in doc_contents.inline_shapes:
+        print('inline_shape: ', inline_shape)
+        print('inline_shape.type: ', inline_shape.type)
     
-        if shape.type == MSO_SHAPE_TYPE.PICTURE:            
+        if inline_shape.type == WD_INLINE_SHAPE_TYPE.PICTURE:
             # image bytes to PIL Image object
             #image_bytes = shape.image
             
-            image = shape.image
+            image = inline_shape.image
             # image bytes to PIL Image object
             image_bytes = image.blob
                 
