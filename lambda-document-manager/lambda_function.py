@@ -445,7 +445,7 @@ def extract_images_from_pdf(reader, key):
     for i, page in enumerate(reader.pages):
         print('page: ', page)
         
-        list = []
+        img_list = []
         for image_file_object in page.images:
             print('image_file_object: ', image_file_object)        
             #pixels = BytesIO(image_file_object.data)
@@ -453,11 +453,12 @@ def extract_images_from_pdf(reader, key):
             img_name = image_file_object.name
             print('img_name: ', img_name)
             
-            if img_name in list:
+            if img_name in img_list:
                 print('skip....')
                 continue
             
-            list.append(img_name)
+            img_list.append(img_name)
+            print('list: ', img_list)
             
             ext = img_name.split('.')[-1]            
             contentType = ""
