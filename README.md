@@ -560,6 +560,9 @@ def delete_document_if_exist(metadata_key):
 
 문서를 크기에 따라 parent chunk와 child chunk로 나누어서 child chunk를 찾은후에 LLM의 context에는 parent chunk를 사용하면, 검색의 정확도는 높이고 충분한 문서를 context로 활용할 수 있습니다. 상세한 내용은 [parent-document-retrieval.md](https://github.com/kyopark2014/korean-chatbot-using-amazon-bedrock/blob/main/parent-document-retrieval.md)을 참조합니다.
 
+### S3 event를 이용한 RAG 등록 및 이미지 추출
+
+[RAG-s3-event.md](https://github.com/kyopark2014/korean-chatbot-using-amazon-bedrock/blob/main/RAG-s3-event.md)에서는 S3 event를 등록하는 방법과 등록된 문서에서 이미지만 추출하는 방법을 설명합니다.
 
 ### Google Search API 활용
 
