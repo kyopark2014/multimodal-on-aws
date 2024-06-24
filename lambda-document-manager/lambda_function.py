@@ -596,6 +596,9 @@ def extract_images_from_docx(doc_contents, key):
             objectName = (key[key.find(s3_prefix)+len(s3_prefix)+1:len(key)])
             folder = s3_prefix+'/files/'+objectName+'/'
             print('folder: ', folder)
+            
+            fname = 'img_'+key.split('/')[-1].split('.')[0]+f"_{picture_count}"  
+            print('fname: ', fname)
                             
             ext = filename.split('.')[-1]            
             contentType = ""
@@ -619,7 +622,9 @@ def extract_images_from_docx(doc_contents, key):
                 contentType = 'image/eps'
             # print('contentType: ', contentType)
                     
-            img_key = folder+filename        
+            img_key = folder+filename+'.'+ext
+            print('img_key: ', img_key)
+            
             response = s3_client.put_object(
                 Bucket=s3_bucket,
                 Key=img_key,
