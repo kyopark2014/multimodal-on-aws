@@ -622,7 +622,7 @@ def extract_images_from_docx(doc_contents, key):
                 contentType = 'image/eps'
             # print('contentType: ', contentType)
                     
-            img_key = folder+filename+'.'+ext
+            img_key = folder+fname+'.'+ext
             print('img_key: ', img_key)
             
             response = s3_client.put_object(
