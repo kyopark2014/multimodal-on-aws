@@ -39,6 +39,7 @@ const enableParallelSummay = 'true';
 const separated_chat_history = 'true';
 const enalbeParentDocumentRetrival = 'true';
 const enableImageExtraction = 'true';
+const enableHybridSearch = 'true'  
 
 const claude3_sonnet_for_workshop = [
   {

@@ -55,6 +55,7 @@ LLM_for_multimodal= json.loads(os.environ.get('LLM_for_multimodal'))
 LLM_embedding = json.loads(os.environ.get('LLM_embedding'))
 priorty_search_embedding = json.loads(os.environ.get('priorty_search_embedding'))
 enalbeParentDocumentRetrival = os.environ.get('enalbeParentDocumentRetrival')
+enableHybridSearch = os.environ.get('enableHybridSearch')
 
 selected_chat = 0
 selected_multimodal = 0
@@ -1089,8 +1090,104 @@ def get_parent_document(parent_doc_id):
     
     return source['text'], metadata['name'], metadata['uri'], metadata['doc_level']    
 
-def retrieve_docs_from_vectorstore(vectorstore_opensearch, query, top_k):
+def lexical_search(query, top_k):
+    relevant_docs = []
+    
+    # lexical search (keyword)
+    min_match = 0
+    query = {
+        "query": {
+            "bool": {
+                "must": [
+                    {
+                        "match": {
+                            "text": {
+                                "query": query,
+                                "minimum_should_match": f'{min_match}%',
+                                "operator":  "or",
+                            }
+                        }
+                    },
+                ],
+                "filter": [
+                ]
+            }
+        }
+    }
+
+    response = os_client.search(
+        body=query,
+        index="idx-*", # all
+    )
+    # print('lexical query result: ', json.dumps(response))
+            
+    for i, document in enumerate(response['hits']['hits']):
+        if i>top_k: 
+            break
+                
+        excerpt = document['_source']['text']
+        print(f'## Document(opensearch-keyward) {i+1}: {excerpt}')
+
+        name = document['_source']['metadata']['name']
+        print('name: ', name)
+
+        page = ""
+        if "page" in document['_source']['metadata']:
+            page = document['_source']['metadata']['page']
+                
+        uri = ""
+        if "uri" in document['_source']['metadata']:
+            uri = document['_source']['metadata']['uri']
+        print('uri: ', uri)
+
+        confidence = str(document['_score'])
+        assessed_score = ""
+
+        if page:
+            print('page: ', page)
+            doc_info = {
+                "rag_type": 'opensearch-keyward',
+                "confidence": confidence,
+                "metadata": {
+                    "source": uri,
+                    "title": name,
+                    "excerpt": excerpt,
+                    "translated_excerpt": "",
+                    "document_attributes": {
+                        "_excerpt_page_number": page
+                    }
+                },
+                "assessed_score": assessed_score,
+            }
+        else: 
+            doc_info = {
+                "rag_type": 'opensearch-keyward',
+                "confidence": confidence,
+                "metadata": {
+                    "source": uri,
+                    "title": name,
+                    "excerpt": excerpt,
+                    "translated_excerpt": ""
+                },
+                "assessed_score": assessed_score,
+            }
+        relevant_docs.append(doc_info)
+
+    return relevant_docs    
+
+def vector_search(bedrock_embedding, query, top_k):
     print(f"query: {query}")
+    
+    vectorstore_opensearch = OpenSearchVectorSearch(
+        index_name = "idx-*", # all
+        is_aoss = False,
+        ef_search = 1024, # 512(default)
+        m=48,
+        #engine="faiss",  # default: nmslib
+        embedding_function = bedrock_embedding,
+        opensearch_url=opensearch_url,
+        http_auth=(opensearch_account, opensearch_passwd), # http_auth=awsauth,
+    ) 
 
     relevant_docs = []
             
@@ -1163,6 +1260,7 @@ def retrieve_docs_from_vectorstore(vectorstore_opensearch, query, top_k):
                 "assessed_score": assessed_score,
             }
         relevant_docs.append(doc_info)
+    
         
     return relevant_docs
 
@@ -1213,27 +1311,20 @@ def get_answer_using_RAG(chat, text, conv_type, connectionId, requestId, bedrock
         token_counter_relevant_docs = chat.get_num_tokens(relevant_context)
 
     return msg, reference
-    
-def retrieve_docs_from_RAG(revised_question, connectionId, requestId, bedrock_embedding):
-    vectorstore_opensearch = OpenSearchVectorSearch(
-        index_name = "idx-*", # all
-        is_aoss = False,
-        ef_search = 1024, # 512(default)
-        m=48,
-        #engine="faiss",  # default: nmslib
-        embedding_function = bedrock_embedding,
-        opensearch_url=opensearch_url,
-        http_auth=(opensearch_account, opensearch_passwd), # http_auth=awsauth,
-    ) 
-         
-    relevant_docs = [] 
-    rel_docs = retrieve_docs_from_vectorstore(vectorstore_opensearch=vectorstore_opensearch, query=revised_question, top_k=top_k)
-    print(f'rel_docs: '+json.dumps(rel_docs))
-                
-    if(len(rel_docs)>=1):
-        for doc in rel_docs:
-            relevant_docs.append(doc)
 
+def retrieve_docs_from_RAG(revised_question, connectionId, requestId, bedrock_embedding):
+    # vector search
+    rel_docs_opensearch = vector_search(bedrock_embedding=bedrock_embedding, query=revised_question, top_k=top_k)
+    print(f'rel_docs (vector): '+json.dumps(rel_docs_opensearch))
+    
+    if enableHybridSearch == 'true':
+        # lexical search
+        rel_docs_lexical_search = lexical_search(revised_question, top_k)    
+        print(f'rel_docs (lexical): '+json.dumps(rel_docs_lexical_search))
+        relevant_docs = rel_docs_opensearch + rel_docs_lexical_search
+    else:
+        relevant_docs = rel_docs_opensearch    
+    
     if debugMessageMode=='true':
         for i, doc in enumerate(relevant_docs):
             print(f"#### relevant_docs ({i}): {json.dumps(doc)}")
