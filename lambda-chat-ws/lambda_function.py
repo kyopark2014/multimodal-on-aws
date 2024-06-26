@@ -1118,7 +1118,7 @@ def lexical_search(query, top_k):
         body=query,
         index="idx-*", # all
     )
-    #print('lexical query result: ', json.dumps(response))
+    # print('lexical query result: ', json.dumps(response))
             
     for i, document in enumerate(response['hits']['hits']):
         if i>top_k: 
@@ -1148,7 +1148,9 @@ def lexical_search(query, top_k):
                 parent_doc_id = document['_source']['metadata']['parent_doc_id']
             if 'doc_level' in document['_source']['metadata']:
                 doc_level = document['_source']['metadata']['doc_level']
-            excerpt, name, uri, doc_level = get_parent_document(parent_doc_id) # use pareant document
+            
+            if 'parent_doc_id' in document['_source']['metadata']:  # update            
+                excerpt, name, uri, doc_level = get_parent_document(parent_doc_id) # use pareant document
 
         if page:
             print('page: ', page)
