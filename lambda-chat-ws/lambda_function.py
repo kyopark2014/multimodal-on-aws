@@ -1120,18 +1120,6 @@ def lexical_search(query, top_k):
     )
     # print('lexical query result: ', json.dumps(response))
     
-    
-    
-        for re in result:
-            if 'parent_doc_id' in re[0].metadata:
-                parent_doc_id = re[0].metadata['parent_doc_id']
-                doc_level = re[0].metadata['doc_level']
-                print(f"doc_level: {doc_level}, parent_doc_id: {parent_doc_id}")
-                        
-                if doc_level == 'child':
-                    if parent_doc_id in docList:
-                        print('duplicated!')
-    
     docList = []   
     for i, document in enumerate(response['hits']['hits']):
         if i>top_k: 
