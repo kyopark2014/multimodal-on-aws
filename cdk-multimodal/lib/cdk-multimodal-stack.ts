@@ -553,7 +553,8 @@ export class CdkMultimodalStack extends cdk.Stack {
         googleApiSecret: googleApiSecret.secretName,
         projectName: projectName,
         separated_chat_history: separated_chat_history,
-        enalbeParentDocumentRetrival: enalbeParentDocumentRetrival    
+        enalbeParentDocumentRetrival: enalbeParentDocumentRetrival,
+        enableHybridSearch: enableHybridSearch    
       }
     });     
     lambdaChatWebsocket.grantInvoke(new iam.ServicePrincipal('apigateway.amazonaws.com'));  
