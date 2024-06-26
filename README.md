@@ -560,6 +560,91 @@ def delete_document_if_exist(metadata_key):
 
 문서를 크기에 따라 parent chunk와 child chunk로 나누어서 child chunk를 찾은후에 LLM의 context에는 parent chunk를 사용하면, 검색의 정확도는 높이고 충분한 문서를 context로 활용할 수 있습니다. 상세한 내용은 [parent-document-retrieval.md](https://github.com/kyopark2014/korean-chatbot-using-amazon-bedrock/blob/main/parent-document-retrieval.md)을 참조합니다.
 
+### Vector Search
+
+Vector Search는 Parent/Child Chunking을 적용했을 때와 안했을 때에 알와 같이 구성할 수 있습니다.
+
+```python
+def vector_search(bedrock_embedding, query, top_k):
+    vectorstore_opensearch = OpenSearchVectorSearch(
+        index_name = "idx-*", # all
+        is_aoss = False,
+        ef_search = 1024, # 512(default)
+        m=48,
+        #engine="faiss",  # default: nmslib
+        embedding_function = bedrock_embedding,
+        opensearch_url=opensearch_url,
+        http_auth=(opensearch_account, opensearch_passwd), # http_auth=awsauth,
+    ) 
+
+    relevant_docs = []
+            
+if enalbeParentDocumentRetrival=='true':  # parent/child chunking
+        result = vectorstore_opensearch.similarity_search_with_score(
+            query = query,
+            k = top_k*2,  # use double
+            pre_filter={"doc_level": {"$eq": "child"}}
+        )
+                
+        relevant_documents = []
+        docList = []
+        for re in result:
+            if 'parent_doc_id' in re[0].metadata:
+                parent_doc_id = re[0].metadata['parent_doc_id']
+                doc_level = re[0].metadata['doc_level']
+                        
+                if doc_level == 'child':
+                    if parent_doc_id in docList:
+                        print('duplicated!')
+                    else:
+                        relevant_documents.append(re)
+                        docList.append(parent_doc_id)
+                        
+                        if len(relevant_documents)>=top_k:
+                            break
+                
+    else:  # single chunking
+        relevant_documents = vectorstore_opensearch.similarity_search_with_score(
+            query = query,
+            k = top_k,
+        )
+```
+
+### Lexical Search
+
+아래와 같이 lexical search를 수행합니다. Hybrid일 경우에 Vector에서 나온 결과와 함께 mergy 한 이후에 priority search를 수행합니다.
+
+```python
+def lexical_search(query, top_k):
+    relevant_docs = []
+    
+    min_match = 0
+    query = {
+        "query": {
+            "bool": {
+                "must": [
+                    {
+                        "match": {
+                            "text": {
+                                "query": query,
+                                "minimum_should_match": f'{min_match}%',
+                                "operator":  "or",
+                            }
+                        }
+                    },
+                ],
+                "filter": [
+                ]
+            }
+        }
+    }
+
+    response = os_client.search(
+        body=query,
+        index="idx-*", # all
+    )
+```
+
 ### S3 event 등록
 
 [RAG-s3-event.md](https://github.com/kyopark2014/korean-chatbot-using-amazon-bedrock/blob/main/RAG-s3-event.md)에서는 S3 event를 등록하는 방법과 등록된 문서에서 이미지만 추출하는 방법을 설명합니다.
