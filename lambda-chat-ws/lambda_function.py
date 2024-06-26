@@ -1929,12 +1929,12 @@ def getResponse(connectionId, jsonBody):
                     else:
                         msg = run_agent_react_chat(connectionId, requestId, chat, text)
                                         
-                elif conv_type == 'qa-os':   # RAG - Vector
+                elif conv_type == 'qa-opensearch-vector':   # RAG - Vector
                     print(f'rag_type: {rag_type}')
                     search_type ='vector'
                     msg, reference = get_answer_using_RAG(chat, text, search_type, connectionId, requestId, bedrock_embedding)
                 
-                elif conv_type == 'qa-hybrid':   # RAG - Hybrid
+                elif conv_type == 'qa-opensearch-hybrid':   # RAG - Hybrid
                     print(f'rag_type: {rag_type}')
                     search_type = 'hybrid'
                     msg, reference = get_answer_using_RAG(chat, text, search_type, connectionId, requestId, bedrock_embedding)

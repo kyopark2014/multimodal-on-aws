@@ -602,12 +602,12 @@ attachFile.addEventListener('click', function(){
                             console.log(xmlHttp.responseText);
 
                             function_type = 'upload'
-                            if(conversationType=='qa-opensearch-os') {
-                                conv_type = 'qa-os',
+                            if(conversationType=='qa-opensearch-vector') {
+                                conv_type = 'qa-opensearch-vector',
                                 rag_type = 'opensearch'
                             }
                             if(conversationType=='qa-opensearch-hybrid') {
-                                conv_type = 'qa-hybrid',
+                                conv_type = 'qa-opensearch-hybrid',
                                 rag_type = 'opensearch'
                             }
                             else {
