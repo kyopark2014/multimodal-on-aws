@@ -1030,7 +1030,7 @@ def get_reference(docs):
                            
     return reference
 
-def get_documents_from_opensearch(vectorstore_opensearch, query, top_k):
+def vector_search_using_parent_child_retrieval(vectorstore_opensearch, query, top_k):
     result = vectorstore_opensearch.similarity_search_with_score(
         query = query,
         k = top_k*2,  
@@ -1192,10 +1192,33 @@ def vector_search(bedrock_embedding, query, top_k):
     relevant_docs = []
             
     # vector search (semantic) 
-    if enalbeParentDocumentRetrival=='true':
-        relevant_documents = get_documents_from_opensearch(vectorstore_opensearch, query, top_k)
+    if enalbeParentDocumentRetrival=='true':  # parent/child chunking
+        result = vectorstore_opensearch.similarity_search_with_score(
+            query = query,
+            k = top_k*2,  # use double
+            pre_filter={"doc_level": {"$eq": "child"}}
+        )
+        print('result: ', result)
                 
-    else:
+        relevant_documents = []
+        docList = []
+        for re in result:
+            if 'parent_doc_id' in re[0].metadata:
+                parent_doc_id = re[0].metadata['parent_doc_id']
+                doc_level = re[0].metadata['doc_level']
+                print(f"doc_level: {doc_level}, parent_doc_id: {parent_doc_id}")
+                        
+                if doc_level == 'child':
+                    if parent_doc_id in docList:
+                        print('duplicated!')
+                    else:
+                        relevant_documents.append(re)
+                        docList.append(parent_doc_id)
+                        
+                        if len(relevant_documents)>=top_k:
+                            break
+                
+    else:  # single chunking
         relevant_documents = vectorstore_opensearch.similarity_search_with_score(
             query = query,
             k = top_k,
@@ -1574,9 +1597,32 @@ def search_by_opensearch(keyword: str) -> str:
     answer = ""
     top_k = 2
     
-    if enalbeParentDocumentRetrival == 'true':
-        relevant_documents = get_documents_from_opensearch(vectorstore_opensearch, keyword, top_k)
-
+    if enalbeParentDocumentRetrival == 'true': # parent/child chunking
+        result = vectorstore_opensearch.similarity_search_with_score(
+            query = keyword,
+            k = top_k*2,  # use double
+            pre_filter={"doc_level": {"$eq": "child"}}
+        )
+        print('result: ', result)
+                
+        relevant_documents = []
+        docList = []
+        for re in result:
+            if 'parent_doc_id' in re[0].metadata:
+                parent_doc_id = re[0].metadata['parent_doc_id']
+                doc_level = re[0].metadata['doc_level']
+                print(f"doc_level: {doc_level}, parent_doc_id: {parent_doc_id}")
+                        
+                if doc_level == 'child':
+                    if parent_doc_id in docList:
+                        print('duplicated!')
+                    else:
+                        relevant_documents.append(re)
+                        docList.append(parent_doc_id)
+                        
+                        if len(relevant_documents)>=top_k:
+                            break
+                        
         for i, document in enumerate(relevant_documents):
             print(f'## Document(opensearch-vector) {i+1}: {document}')
             
