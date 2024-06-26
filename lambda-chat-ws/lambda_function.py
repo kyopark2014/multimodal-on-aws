@@ -1186,13 +1186,13 @@ def lexical_search(query, top_k):
                 "assessed_score": assessed_score,
             }
         
-        if parent_doc_id:
-            if parent_doc_id in docList:
+        if parent_doc_id:  # parent doc
+            if parent_doc_id in docList:  # check duplication
                 print('duplicated!')
             else:
                 relevant_docs.append(doc_info)    
                 docList.append(parent_doc_id)
-        else:
+        else:  # child doc
             relevant_docs.append(doc_info)
 
     return relevant_docs    
