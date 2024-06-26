@@ -299,9 +299,15 @@ function onSend(e) {
         let requestId = uuidv4();
         addSentMessage(requestId, timestr, message.value);
         
-        if(conversationType=='qa-opensearch') {
+        if(conversationType=='qa-opensearch-vector') {
             type = "text",
-            conv_type = 'qa',
+            conv_type = 'qa-opensearch-vector',
+            rag_type = 'opensearch',
+            function_type = 'rag'
+        }
+        else if(conversationType=='qa-opensearch-hybrid') {
+            type = "text",
+            conv_type = 'qa-opensearch-hybrid',
             rag_type = 'opensearch',
             function_type = 'rag'
         }
