@@ -1119,7 +1119,20 @@ def lexical_search(query, top_k):
         index="idx-*", # all
     )
     # print('lexical query result: ', json.dumps(response))
-            
+    
+    
+    
+        for re in result:
+            if 'parent_doc_id' in re[0].metadata:
+                parent_doc_id = re[0].metadata['parent_doc_id']
+                doc_level = re[0].metadata['doc_level']
+                print(f"doc_level: {doc_level}, parent_doc_id: {parent_doc_id}")
+                        
+                if doc_level == 'child':
+                    if parent_doc_id in docList:
+                        print('duplicated!')
+    
+    docList = []   
     for i, document in enumerate(response['hits']['hits']):
         if i>top_k: 
             break
@@ -1151,7 +1164,7 @@ def lexical_search(query, top_k):
             
             if 'parent_doc_id' in document['_source']['metadata']:  # update            
                 excerpt, name, uri, doc_level = get_parent_document(parent_doc_id) # use pareant document
-
+                
         if page:
             print('page: ', page)
             doc_info = {
@@ -1184,7 +1197,15 @@ def lexical_search(query, top_k):
                 },
                 "assessed_score": assessed_score,
             }
-        relevant_docs.append(doc_info)
+        
+        if parent_doc_id:
+            if parent_doc_id in docList:
+                print('duplicated!')
+            else:
+                relevant_docs.append(doc_info)    
+                docList.append(parent_doc_id)
+        else:
+            relevant_docs.append(doc_info)
 
     return relevant_docs    
 
