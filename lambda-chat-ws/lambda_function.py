@@ -55,7 +55,6 @@ LLM_for_multimodal= json.loads(os.environ.get('LLM_for_multimodal'))
 LLM_embedding = json.loads(os.environ.get('LLM_embedding'))
 priorty_search_embedding = json.loads(os.environ.get('priorty_search_embedding'))
 enalbeParentDocumentRetrival = os.environ.get('enalbeParentDocumentRetrival')
-enableHybridSearch = os.environ.get('enableHybridSearch')
 
 selected_chat = 0
 selected_multimodal = 0
@@ -1287,7 +1286,7 @@ def vector_search(bedrock_embedding, query, top_k):
         
     return relevant_docs
 
-def get_answer_using_RAG(chat, text, conv_type, connectionId, requestId, bedrock_embedding):
+def get_answer_using_RAG(chat, text, search_type, connectionId, requestId, bedrock_embedding):
     global time_for_revise, time_for_rag, time_for_inference, time_for_priority_search, number_of_relevant_docs 
     time_for_revise = time_for_rag = time_for_inference = time_for_priority_search = number_of_relevant_docs = 0
     
@@ -1302,7 +1301,7 @@ def get_answer_using_RAG(chat, text, conv_type, connectionId, requestId, bedrock
     print('processing time for revised question: ', time_for_revise)
     
     # retrieve relevant documents from RAG
-    selected_relevant_docs = retrieve_docs_from_RAG(text, connectionId, requestId, bedrock_embedding)
+    selected_relevant_docs = retrieve_docs_from_RAG(text, connectionId, requestId, bedrock_embedding, search_type)
     
     # get context
     relevant_context = ""
@@ -1335,17 +1334,17 @@ def get_answer_using_RAG(chat, text, conv_type, connectionId, requestId, bedrock
 
     return msg, reference
 
-def retrieve_docs_from_RAG(revised_question, connectionId, requestId, bedrock_embedding):
+def retrieve_docs_from_RAG(revised_question, connectionId, requestId, bedrock_embedding, search_type):
     # vector search
     rel_docs_opensearch = vector_search(bedrock_embedding=bedrock_embedding, query=revised_question, top_k=top_k)
     print(f'rel_docs (vector): '+json.dumps(rel_docs_opensearch))
     
-    if enableHybridSearch == 'true':
+    if search_type == 'hybrid':
         # lexical search
         rel_docs_lexical_search = lexical_search(revised_question, top_k)    
         print(f'rel_docs (lexical): '+json.dumps(rel_docs_lexical_search))
         relevant_docs = rel_docs_opensearch + rel_docs_lexical_search
-    else:
+    else:  # vector only
         relevant_docs = rel_docs_opensearch    
     
     if debugMessageMode=='true':
@@ -1930,9 +1929,15 @@ def getResponse(connectionId, jsonBody):
                     else:
                         msg = run_agent_react_chat(connectionId, requestId, chat, text)
                                         
-                elif conv_type == 'qa':   # RAG
+                elif conv_type == 'qa-os':   # RAG - Vector
                     print(f'rag_type: {rag_type}')
-                    msg, reference = get_answer_using_RAG(chat, text, conv_type, connectionId, requestId, bedrock_embedding)
+                    search_type ='vector'
+                    msg, reference = get_answer_using_RAG(chat, text, search_type, connectionId, requestId, bedrock_embedding)
+                
+                elif conv_type == 'qa-hybrid':   # RAG - Hybrid
+                    print(f'rag_type: {rag_type}')
+                    search_type = 'hybrid'
+                    msg, reference = get_answer_using_RAG(chat, text, search_type, connectionId, requestId, bedrock_embedding)
                     
                 elif conv_type == 'translation':                    
                     msg = translate_text(chat, text)

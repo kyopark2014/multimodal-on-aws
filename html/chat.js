@@ -602,8 +602,12 @@ attachFile.addEventListener('click', function(){
                             console.log(xmlHttp.responseText);
 
                             function_type = 'upload'
-                            if(conversationType=='qa-opensearch') {
-                                conv_type = 'qa',
+                            if(conversationType=='qa-opensearch-os') {
+                                conv_type = 'qa-os',
+                                rag_type = 'opensearch'
+                            }
+                            if(conversationType=='qa-opensearch-hybrid') {
+                                conv_type = 'qa-hybrid',
                                 rag_type = 'opensearch'
                             }
                             else {

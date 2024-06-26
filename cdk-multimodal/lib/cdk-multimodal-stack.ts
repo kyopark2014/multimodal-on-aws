@@ -39,7 +39,6 @@ const enableParallelSummay = 'true';
 const separated_chat_history = 'true';
 const enalbeParentDocumentRetrival = 'true';
 const enableImageExtraction = 'true';
-const enableHybridSearch = 'true'  
 
 const claude3_sonnet_for_workshop = [
   {
@@ -553,8 +552,7 @@ export class CdkMultimodalStack extends cdk.Stack {
         googleApiSecret: googleApiSecret.secretName,
         projectName: projectName,
         separated_chat_history: separated_chat_history,
-        enalbeParentDocumentRetrival: enalbeParentDocumentRetrival,
-        enableHybridSearch: enableHybridSearch    
+        enalbeParentDocumentRetrival: enalbeParentDocumentRetrival
       }
     });     
     lambdaChatWebsocket.grantInvoke(new iam.ServicePrincipal('apigateway.amazonaws.com'));  
