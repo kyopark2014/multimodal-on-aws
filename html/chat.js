@@ -606,7 +606,7 @@ attachFile.addEventListener('click', function(){
                                 conv_type = 'qa-opensearch-vector',
                                 rag_type = 'opensearch'
                             }
-                            else if(conversationType=='qa-opensearch-hybrid') {
+                            else if(conversationType=='qa-opensearch-hybrid') { 
                                 conv_type = 'qa-opensearch-hybrid',
                                 rag_type = 'opensearch'
                             }
