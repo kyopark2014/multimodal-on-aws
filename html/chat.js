@@ -299,15 +299,9 @@ function onSend(e) {
         let requestId = uuidv4();
         addSentMessage(requestId, timestr, message.value);
         
-        if(conversationType=='qa-opensearch-vector') {
+        if(conversationType=='qa-opensearch-vector' || conversationType=='qa-opensearch-hybrid') {
             type = "text",
-            conv_type = 'qa-opensearch-vector',
-            rag_type = 'opensearch',
-            function_type = 'rag'
-        }
-        else if(conversationType=='qa-opensearch-hybrid') {
-            type = "text",
-            conv_type = 'qa-opensearch-hybrid',
+            conv_type = conversationType,
             rag_type = 'opensearch',
             function_type = 'rag'
         }
@@ -608,12 +602,8 @@ attachFile.addEventListener('click', function(){
                             console.log(xmlHttp.responseText);
 
                             function_type = 'upload'
-                            if(conversationType=='qa-opensearch-vector') {
-                                conv_type = 'qa-opensearch-vector',
-                                rag_type = 'opensearch'
-                            }
-                            else if(conversationType=='qa-opensearch-hybrid') { 
-                                conv_type = 'qa-opensearch-hybrid',
+                            if(conversationType=='qa-opensearch-vector' || conversationType=='qa-opensearch-hybrid') {
+                                conv_type = conversationType,
                                 rag_type = 'opensearch'
                             }
                             else {
