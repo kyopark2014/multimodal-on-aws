@@ -1141,6 +1141,12 @@ def lexical_search(query, top_k):
 
         confidence = str(document['_score'])
         assessed_score = ""
+        
+        parent_doc_id = doc_level = ""            
+        if enalbeParentDocumentRetrival == 'true':
+            parent_doc_id = document[0].metadata['parent_doc_id']
+            doc_level = document[0].metadata['doc_level']
+            excerpt, name, uri, doc_level = get_parent_document(parent_doc_id) # use pareant document
 
         if page:
             print('page: ', page)
@@ -1154,7 +1160,9 @@ def lexical_search(query, top_k):
                     "translated_excerpt": "",
                     "document_attributes": {
                         "_excerpt_page_number": page
-                    }
+                    },
+                    "parent_doc_id": parent_doc_id,
+                    "doc_level": doc_level  
                 },
                 "assessed_score": assessed_score,
             }
@@ -1166,7 +1174,9 @@ def lexical_search(query, top_k):
                     "source": uri,
                     "title": name,
                     "excerpt": excerpt,
-                    "translated_excerpt": ""
+                    "translated_excerpt": "",
+                    "parent_doc_id": parent_doc_id,
+                    "doc_level": doc_level  
                 },
                 "assessed_score": assessed_score,
             }
