@@ -35,6 +35,7 @@ const numberOfRelevantDocs = '4';
 const supportedFormat = JSON.stringify(["pdf", "txt", "csv", "pptx", "ppt", "docx", "doc", "xlsx", "py", "js", "md", "jpeg", "jpg", "png"]);  
 
 const max_object_size = 102400000; // 100 MB max size of an object, 50MB(default)
+const enableNoriPlugin = 'false';
 const enableParallelSummay = 'true';
 const separated_chat_history = 'true';
 const enalbeParentDocumentRetrival = 'true';
@@ -552,7 +553,8 @@ export class CdkMultimodalStack extends cdk.Stack {
         googleApiSecret: googleApiSecret.secretName,
         projectName: projectName,
         separated_chat_history: separated_chat_history,
-        enalbeParentDocumentRetrival: enalbeParentDocumentRetrival
+        enalbeParentDocumentRetrival: enalbeParentDocumentRetrival,
+        enableNoriPlugin: enableNoriPlugin
       }
     });     
     lambdaChatWebsocket.grantInvoke(new iam.ServicePrincipal('apigateway.amazonaws.com'));  
