@@ -1447,6 +1447,9 @@ def retrieve_docs_from_RAG(revised_question, connectionId, requestId, bedrock_em
             continue
         contentList.append(doc['metadata']['excerpt'])
         update_docs.append(doc)
+        
+        if len(update_docs)>=top_k:
+            break
     
     print('update_docs:', json.dumps(update_docs))
     #for i, doc in enumerate(update_docs):
@@ -1673,7 +1676,7 @@ def search_by_opensearch(keyword: str) -> str:
             doc_level = document[0].metadata['doc_level']
             print(f"child: parent_doc_id: {parent_doc_id}, doc_level: {doc_level}")
                 
-            doc = get_parent_document(document[0]) # use pareant document
+            doc = get_parent_document(document) # use pareant document
             excerpt = doc['metadata']['excerpt']
             uri = doc['metadata']['uri']
             
