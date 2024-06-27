@@ -1054,7 +1054,7 @@ def vector_search_using_parent_child_retrieval(vectorstore_opensearch, query, to
                     relevant_documents.append(re)
                     docList.append(parent_doc_id)
                     
-                    if len(relevant_documents)>top_k:
+                    if len(relevant_documents)>=top_k:
                         break
                                 
     # print('lexical query result: ', json.dumps(response))
@@ -1151,7 +1151,7 @@ def lexical_search(query, top_k):
         
         docList = []   
         for i, document in enumerate(response['hits']['hits']):
-            if i>top_k: 
+            if i>=top_k: 
                 break
                     
             excerpt = document['_source']['text']
@@ -1264,7 +1264,7 @@ def vector_search(bedrock_embedding, query, top_k):
                         relevant_documents.append(re)
                         docList.append(parent_doc_id)
                         
-                        #if len(relevant_documents)>top_k:
+                        #if len(relevant_documents)>=top_k:
                         #    break
                 
     else:  # single chunking
@@ -1465,7 +1465,7 @@ def retrieve_docs_from_RAG(revised_question, connectionId, requestId, bedrock_em
         contentList.append(doc['metadata']['excerpt'])
         update_docs.append(doc)
         
-        if len(update_docs)>top_k:
+        if len(update_docs)>=top_k:
             break
     
     print('update_docs:', json.dumps(update_docs))
@@ -1683,7 +1683,7 @@ def search_by_opensearch(keyword: str) -> str:
                         relevant_documents.append(re)
                         docList.append(parent_doc_id)
                         
-                        if len(relevant_documents)>top_k:
+                        if len(relevant_documents)>=top_k:
                             break
                         
         for i, document in enumerate(relevant_documents):
