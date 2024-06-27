@@ -77,8 +77,13 @@ cdk deploy --all
 
 ![image](https://github.com/kyopark2014/multimodal-on-aws/assets/52392004/ac12f567-024f-4ad1-8d14-2452d9c68041)
 
+9) Hybrid 검색을 위한 Nori Plug-in 설치
 
-9) [Option] Google API Key Update하기
+[OpenSearch Console](https://us-west-2.console.aws.amazon.com/aos/home?region=us-west-2#opensearch/domains)에서 "korean-chatbot-with-rag"로 들어가서 [Packages] - [Associate package]을 선택한 후에, 아래와 같이 "analysis-nori"을 설치합니다. 
+
+![image](https://github.com/kyopark2014/korean-chatbot-using-amazon-bedrock/assets/52392004/b91c91a1-b13c-4f5d-bd58-1c8298b2f128)
+
+10) [Option] Google API Key Update하기
 
 [api_key](https://developers.google.com/custom-search/docs/paid_element?hl=ko#api_key)에서 [키 가져오기] - [Select or create project]를 선택하여 Google API Key를 가져옵니다. 만약 기존 키가 없다면 새로 생성합니다.
 
@@ -86,7 +91,7 @@ cdk deploy --all
 
 [Secret Console](https://us-west-2.console.aws.amazon.com/secretsmanager/secret?name=googl_api_key&region=us-west-2)에 접속하여 [Retrieve secret value]를 선택하여, google_api_key와 google_cse_id를 업데이트합니다.
 
-10) [Option] API에 대한 Credential을 획득하고 입력합니다.
+11) [Option] API에 대한 Credential을 획득하고 입력합니다.
 
 - 일반 검색을 위하여 [Tavily Search](https://app.tavily.com/sign-in)에 접속하여 가입 후 API Key를 발급합니다. 이것은 tvly-로 시작합니다.
 - 날씨 검색을 위하여 [openweathermap](https://home.openweathermap.org/api_keys)에 접속하여 API Key를 발급합니다.
