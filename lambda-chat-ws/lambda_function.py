@@ -980,7 +980,7 @@ def priority_search(query, relevant_docs, minSimilarity):
 
     docs = []
     for i, document in enumerate(rel_documents):
-        print(f'## Document(priority_search) {i+1}: {document}')
+        #print(f'## Document(priority_search) {i+1}: {document}')
 
         order = document[0].metadata['order']
         name = document[0].metadata['name']
@@ -1006,7 +1006,7 @@ def get_reference(docs):
         excerpt = excerpt.replace('\n','\\n')            
                 
         if doc['rag_type'][:10] == 'opensearch':
-            print(f'## Document(get_reference) {i+1}: {doc}')
+            # print(f'## Document(get_reference) {i+1}: {doc}')
                 
             page = ""
             if "document_attributes" in doc['metadata']:
@@ -1022,7 +1022,7 @@ def get_reference(docs):
                 reference = reference + f"{i+1}. <a href={uri} target=_blank>{name}</a>, {doc['rag_type']} ({doc['assessed_score']}), <a href=\"#\" onClick=\"alert(`{excerpt}`)\">관련문서</a>\n"
                     
         elif doc['rag_type'] == 'search': # google search
-            print(f'## Document(get_reference) {i+1}: {doc}')
+            # print(f'## Document(get_reference) {i+1}: {doc}')
                 
             uri = doc['metadata']['source']
             name = doc['metadata']['title']
@@ -1128,7 +1128,7 @@ def lexical_search(query, top_k):
                 break
                     
             excerpt = document['_source']['text']
-            print(f'## Document(opensearch-keyward) {i+1}: {excerpt}')
+            #print(f'## Document(opensearch-keyward) {i+1}: {excerpt}')
 
             name = document['_source']['metadata']['name']
             print('name: ', name)
@@ -1252,7 +1252,7 @@ def vector_search(bedrock_embedding, query, top_k):
     for i, document in enumerate(relevant_documents):
         #print('document.page_content:', document.page_content)
         #print('document.metadata:', document.metadata)
-        print(f'## Document(opensearch-vector) {i+1}: {document}')
+        #print(f'## Document(opensearch-vector) {i+1}: {document}')
 
         name = document[0].metadata['name']
         # print('metadata: ', document[0].metadata)
@@ -1307,8 +1307,7 @@ def vector_search(bedrock_embedding, query, top_k):
                 "assessed_score": assessed_score,
             }
         relevant_docs.append(doc_info)
-    
-        
+            
     return relevant_docs
 
 def get_answer_using_RAG(chat, text, search_type, connectionId, requestId, bedrock_embedding):
@@ -1335,7 +1334,7 @@ def get_answer_using_RAG(chat, text, search_type, connectionId, requestId, bedro
         content = document['metadata']['excerpt']
                 
         relevant_context = relevant_context + content + "\n\n"
-        print('relevant_context: ', relevant_context)
+    # print('relevant_context: ', relevant_context)
     
     end_time_for_rag = time.time()
     time_for_rag = end_time_for_rag - end_time_for_revise
@@ -1658,7 +1657,7 @@ def search_by_opensearch(keyword: str) -> str:
                             break
                         
         for i, document in enumerate(relevant_documents):
-            print(f'## Document(opensearch-vector) {i+1}: {document}')
+            #print(f'## Document(opensearch-vector) {i+1}: {document}')
             
             parent_doc_id = document[0].metadata['parent_doc_id']
             doc_level = document[0].metadata['doc_level']
@@ -1675,7 +1674,7 @@ def search_by_opensearch(keyword: str) -> str:
         )
 
         for i, document in enumerate(relevant_documents):
-            print(f'## Document(opensearch-vector) {i+1}: {document}')
+            #print(f'## Document(opensearch-vector) {i+1}: {document}')
             
             excerpt = document[0].page_content        
             uri = document[0].metadata['uri']
