@@ -35,7 +35,7 @@ const numberOfRelevantDocs = '4';
 const supportedFormat = JSON.stringify(["pdf", "txt", "csv", "pptx", "ppt", "docx", "doc", "xlsx", "py", "js", "md", "jpeg", "jpg", "png"]);  
 
 const max_object_size = 102400000; // 100 MB max size of an object, 50MB(default)
-const enableNoriPlugin = 'false';
+const enableNoriPlugin = 'true';
 const enableParallelSummay = 'true';
 const separated_chat_history = 'true';
 const enalbeParentDocumentRetrival = 'true';
@@ -554,7 +554,7 @@ export class CdkMultimodalStack extends cdk.Stack {
         projectName: projectName,
         separated_chat_history: separated_chat_history,
         enalbeParentDocumentRetrival: enalbeParentDocumentRetrival,
-        enableNoriPlugin: enableNoriPlugin
+        enableNoriPlugin: enableNoriPlugin,
       }
     });     
     lambdaChatWebsocket.grantInvoke(new iam.ServicePrincipal('apigateway.amazonaws.com'));  
@@ -669,7 +669,8 @@ export class CdkMultimodalStack extends cdk.Stack {
           LLM_embedding: JSON.stringify(titan_embedding_v2),
           enableParallelSummay: enableParallelSummay,
           enalbeParentDocumentRetrival: enalbeParentDocumentRetrival,
-          enableImageExtraction: enableImageExtraction
+          enableImageExtraction: enableImageExtraction,
+          enableNoriPlugin: enableNoriPlugin
         }
       });         
       s3Bucket.grantReadWrite(lambdDocumentManager[i]); // permission for s3
