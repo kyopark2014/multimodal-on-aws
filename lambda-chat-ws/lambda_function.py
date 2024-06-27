@@ -653,7 +653,7 @@ def revise_question(connectionId, requestId, chat, query):
         generated_question = result.content
         
         revised_question = generated_question[generated_question.find('<result>')+8:len(generated_question)-9] # remove <result> tag                   
-        print('revised_question: ', revised_question)
+        #print('revised_question: ', revised_question)
         
     except Exception:
         err_msg = traceback.format_exc()
@@ -955,7 +955,7 @@ def priority_search(query, relevant_docs, minSimilarity):
         else:
             content = doc['metadata']['excerpt']
             
-        print('content: ', content)
+        # print('content: ', content)
         
         excerpts.append(
             Document(
@@ -1037,7 +1037,7 @@ def vector_search_using_parent_child_retrieval(vectorstore_opensearch, query, to
         k = top_k*2,  
         pre_filter={"doc_level": {"$eq": "child"}}
     )
-    print('result: ', result)
+    print('result (opensearch): ', result)
             
     relevant_documents = []
     docList = []
@@ -1080,22 +1080,23 @@ def get_parent_document(doc):
     if 'parent_doc_id' in doc['metadata']:
         parent_doc_id = doc['metadata']['parent_doc_id']
     
-        response = os_client.get(
-            index="idx-rag", 
-            id = parent_doc_id
-        )
-        
-        #source = response['_source']
-        # print('parent_doc: ', source['text'])   
-        
-        #metadata = source['metadata']    
-        #print('name: ', metadata['name'])   
-        #print('uri: ', metadata['uri'])   
-        #print('doc_level: ', metadata['doc_level']) 
-        
-        print('text(before)', doc['metadata']['excerpt'])
-        doc['metadata']['excerpt'] = response['_source']['text']
-        print('text(after)', doc['metadata']['excerpt'])
+        if parent_doc_id:
+            response = os_client.get(
+                index="idx-rag", 
+                id = parent_doc_id
+            )
+            
+            #source = response['_source']
+            # print('parent_doc: ', source['text'])   
+            
+            #metadata = source['metadata']    
+            #print('name: ', metadata['name'])   
+            #print('uri: ', metadata['uri'])   
+            #print('doc_level: ', metadata['doc_level']) 
+            
+            print('text(before)', doc['metadata']['excerpt'])
+            doc['metadata']['excerpt'] = response['_source']['text']
+            print('text(after)', doc['metadata']['excerpt'])
         
     return doc
 
@@ -1140,7 +1141,7 @@ def lexical_search(query, top_k):
             #print(f'## Document(opensearch-keyward) {i+1}: {excerpt}')
 
             name = document['_source']['metadata']['name']
-            print('name: ', name)
+            # print('name: ', name)
 
             page = ""
             if "page" in document['_source']['metadata']:
@@ -1149,7 +1150,7 @@ def lexical_search(query, top_k):
             uri = ""
             if "uri" in document['_source']['metadata']:
                 uri = document['_source']['metadata']['uri']
-            print('uri: ', uri)
+            # print('uri: ', uri)
 
             confidence = str(document['_score'])
             assessed_score = ""
@@ -1160,6 +1161,7 @@ def lexical_search(query, top_k):
                     parent_doc_id = document['_source']['metadata']['parent_doc_id']
                 if 'doc_level' in document['_source']['metadata']:
                     doc_level = document['_source']['metadata']['doc_level']
+                print(f"doc_level: {doc_level}, parent_doc_id: {parent_doc_id}")
                 
             if page:
                 print('page: ', page)
@@ -1195,7 +1197,7 @@ def lexical_search(query, top_k):
                 }
             
             if parent_doc_id:  # parent doc
-                if parent_doc_id in docList:  # check duplication partially
+                if parent_doc_id in docList:  # check duplication partially                    
                     print('duplicated!')
                 else:
                     relevant_docs.append(doc_info)
