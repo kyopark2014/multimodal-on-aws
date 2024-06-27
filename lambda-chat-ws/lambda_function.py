@@ -1370,19 +1370,19 @@ def retrieve_docs_from_RAG(revised_question, connectionId, requestId, bedrock_em
     else:  # vector only
         combined_docs = rel_docs_opensearch    
     
+    # check duplication
     docList = []
     relevant_docs = []
     for doc in combined_docs:
-        print('excerpt: ', doc.metadata.excerpt)
-        if doc.metadata.excerpt in docList:
+        print('excerpt: ', doc['metadata']['excerp'])
+        if  doc['metadata']['excerp'] in docList:
             print('duplicated!')
             continue        
-        docList.append(doc.metadata.excerpt)
+        docList.append( doc['metadata']['excerp'])
         relevant_docs.append(doc)
     
-    if debugMessageMode=='true':
-        for i, doc in enumerate(relevant_docs):
-            print(f"#### relevant_docs ({i}): {json.dumps(doc)}")
+    for i, doc in enumerate(relevant_docs):
+        print(f"#### relevant_docs ({i}): {json.dumps(doc)}")
 
     # priority search
     global time_for_priority_search
