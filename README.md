@@ -612,7 +612,7 @@ if enalbeParentDocumentRetrival=='true':  # parent/child chunking
 
 ### Lexical Search
 
-아래와 같이 lexical search를 수행합니다. Hybrid일 경우에 Vector에서 나온 결과와 함께 mergy 한 이후에 priority search를 수행합니다.
+아래와 같이 lexical search를 수행합니다. Hybrid일 경우에 Vector에서 나온 결과와 함께 mergy 한 이후에 priority search를 수행합니다. [opensearch-nori-plugin.md](https://github.com/kyopark2014/korean-chatbot-using-amazon-bedrock/blob/main/opensearch-nori-plugin.md)에서는 OpenSearch에서 Lexical search 하는 방법에 대해 설명하고 있습니다.
 
 ```python
 def lexical_search(query, top_k):
