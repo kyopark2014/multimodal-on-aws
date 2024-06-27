@@ -1187,15 +1187,15 @@ def lexical_search(query, top_k):
             }
         
         if parent_doc_id:  # parent doc
-            if parent_doc_id in docList:  # check duplication
+            if parent_doc_id in docList:  # check duplication partially
                 print('duplicated!')
             else:
-                relevant_docs.append(doc_info)    
+                relevant_docs.append(doc_info)
                 docList.append(parent_doc_id)
         else:  # child doc
             relevant_docs.append(doc_info)
 
-    return relevant_docs    
+    return relevant_docs
 
 def vector_search(bedrock_embedding, query, top_k):
     print(f"query: {query}")
@@ -1366,9 +1366,19 @@ def retrieve_docs_from_RAG(revised_question, connectionId, requestId, bedrock_em
         # lexical search
         rel_docs_lexical_search = lexical_search(revised_question, top_k)    
         print(f'rel_docs (lexical): '+json.dumps(rel_docs_lexical_search))
-        relevant_docs = rel_docs_opensearch + rel_docs_lexical_search
+        combined_docs = rel_docs_opensearch + rel_docs_lexical_search
     else:  # vector only
-        relevant_docs = rel_docs_opensearch    
+        combined_docs = rel_docs_opensearch    
+    
+    docList = []
+    relevant_docs = []
+    for doc in combined_docs:
+        print('excerpt: ', doc.metadata.excerpt)
+        if doc.metadata.excerpt in docList:
+            print('duplicated!')
+            continue        
+        docList.append(doc.metadata.excerpt)
+        relevant_docs.append(doc)
     
     if debugMessageMode=='true':
         for i, doc in enumerate(relevant_docs):
