@@ -44,7 +44,7 @@ LLM_embedding = json.loads(os.environ.get('LLM_embedding'))
 selected_chat = 0
 selected_multimodal = 0
 selected_embedding = 0
-enableNoriPlugin = os.environ.get('enableNoriPlugin')
+enableHybridSearch = os.environ.get('enableHybridSearch')
 
 roleArn = os.environ.get('roleArn') 
 path = os.environ.get('path')
@@ -359,7 +359,14 @@ def store_image_for_opensearch(key):
         
         return []
 
-
+def is_not_exist(index_name):    
+    if os_client.indices.exists(index_name):        
+        print('use exist index: ', index_name)    
+        return False
+    else:
+        print('no index: ', index_name)
+        return True
+    
 def create_nori_index():
     index_body = {
         'settings': {
@@ -433,18 +440,7 @@ def create_nori_index():
             print('error message: ', err_msg)                
             #raise Exception ("Not able to create the index")
 
-"""
-def delete_index_if_exist(index_name):    
-    if os_client.indices.exists(index_name):
-        print('delete opensearch document index: ', index_name)
-        response = os_client.indices.delete(
-            index=index_name
-        )
-        print('removed index: ', response)    
-    else:
-        print('no index: ', index_name)
-"""
-if enableNoriPlugin == 'true':
+if enableHybridSearch == 'true':
     create_nori_index()
     
 def add_to_opensearch(docs, key):    

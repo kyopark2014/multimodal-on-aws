@@ -55,7 +55,7 @@ LLM_for_multimodal= json.loads(os.environ.get('LLM_for_multimodal'))
 LLM_embedding = json.loads(os.environ.get('LLM_embedding'))
 priorty_search_embedding = json.loads(os.environ.get('priorty_search_embedding'))
 enalbeParentDocumentRetrival = os.environ.get('enalbeParentDocumentRetrival')
-enableNoriPlugin = os.environ.get('enableNoriPlugin')
+enableHybridSearch = os.environ.get('enableHybridSearch')
 
 selected_chat = 0
 selected_multimodal = 0
@@ -1094,8 +1094,8 @@ def lexical_search(query, top_k):
     relevant_docs = []
     
     # lexical search (keyword)
-    if enableNoriPlugin == 'true':
-        min_match = 0
+    min_match = 0
+    if enableHybridSearch == 'true':
         query = {
             "query": {
                 "bool": {
