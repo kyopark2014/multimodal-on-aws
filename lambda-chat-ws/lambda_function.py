@@ -1361,16 +1361,16 @@ def get_answer_using_RAG(chat, text, search_type, connectionId, requestId, bedro
 
 def retrieve_docs_from_RAG(revised_question, connectionId, requestId, bedrock_embedding, search_type):
     # vector search
-    rel_docs_opensearch = vector_search(bedrock_embedding=bedrock_embedding, query=revised_question, top_k=top_k)
-    print(f'rel_docs (vector): '+json.dumps(rel_docs_opensearch))
+    rel_docs_vector_search = vector_search(bedrock_embedding=bedrock_embedding, query=revised_question, top_k=top_k)
+    print(f'rel_docs (vector): '+json.dumps(rel_docs_vector_search))
     
     if search_type == 'hybrid':
         # lexical search
         rel_docs_lexical_search = lexical_search(revised_question, top_k)    
         print(f'rel_docs (lexical): '+json.dumps(rel_docs_lexical_search))
-        combined_docs = rel_docs_opensearch + rel_docs_lexical_search
+        combined_docs = rel_docs_vector_search + rel_docs_lexical_search
     else:  # vector only
-        combined_docs = rel_docs_opensearch    
+        combined_docs = rel_docs_vector_search    
     
     # check duplication
     docList = []
