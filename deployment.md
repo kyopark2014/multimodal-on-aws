@@ -100,4 +100,4 @@ cdk deploy --all
 [Secret manger](https://us-west-2.console.aws.amazon.com/secretsmanager/listsecrets?region=us-west-2)에 접속하여, [openweathermap](https://us-west-2.console.aws.amazon.com/secretsmanager/secret?name=tavilyapikey-llm-multimodal-workshop&region=us-west-2), [tavilyapikey](https://us-west-2.console.aws.amazon.com/secretsmanager/secret?name=tavilyapikey-llm-multimodal-workshop&region=us-west-2), [langsmithapikey](https://us-west-2.console.aws.amazon.com/secretsmanager/secret?name=langsmithapikey-llm-multimodal-workshop&region=us-west-2)에 접속하여, [Retrieve secret value]를 선택 후, api key를 입력합니다.
 
 
-11) Output의 WebUrlforllmmultimodalonaws 복사하여 브라우저로 접속합니다.
+12) Output의 WebUrlforllmmultimodalonaws 복사하여 브라우저로 접속합니다.
