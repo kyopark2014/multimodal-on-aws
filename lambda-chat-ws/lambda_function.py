@@ -1465,7 +1465,7 @@ def retrieve_docs_from_RAG(revised_question, connectionId, requestId, bedrock_em
         contentList.append(doc['metadata']['excerpt'])
         update_docs.append(doc)
         
-        if len(update_docs)>=top_k:
+        if len(update_docs)>top_k:
             break
     
     print('update_docs:', json.dumps(update_docs))
