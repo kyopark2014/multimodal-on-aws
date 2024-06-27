@@ -1075,8 +1075,25 @@ os_client = OpenSearch(
     ssl_show_warn = False,
 )
 
+def get_parent_content(parent_doc_id):
+    if parent_doc_id:
+        response = os_client.get(
+            index="idx-rag", 
+            id = parent_doc_id
+        )
+            
+        source = response['_source']
+        print('excerpt: ', source['text'])   
+            
+        metadata = source['metadata']    
+        #print('name: ', metadata['name'])   
+        print('uri: ', metadata['uri'])   
+        #print('doc_level: ', metadata['doc_level']) 
+                    
+    return source['text'], metadata['uri']
+
 def get_parent_document(doc):
-    print('doc: ', doc)
+    # print('doc: ', doc)
     if 'parent_doc_id' in doc['metadata']:
         parent_doc_id = doc['metadata']['parent_doc_id']
     
@@ -1675,10 +1692,8 @@ def search_by_opensearch(keyword: str) -> str:
             parent_doc_id = document[0].metadata['parent_doc_id']
             doc_level = document[0].metadata['doc_level']
             print(f"child: parent_doc_id: {parent_doc_id}, doc_level: {doc_level}")
-                
-            doc = get_parent_document(document) # use pareant document
-            excerpt = doc['metadata']['excerpt']
-            uri = doc['metadata']['uri']
+            
+            excerpt, uri = get_parent_content(parent_doc_id)
             
             print(f"parent_doc_id: {parent_doc_id}, doc_level: {doc_level}, uri: {uri}, content: {excerpt}")
             
