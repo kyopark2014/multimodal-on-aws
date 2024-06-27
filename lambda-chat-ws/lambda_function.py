@@ -1230,7 +1230,7 @@ def vector_search(bedrock_embedding, query, top_k):
             k = top_k*2,  # use double
             pre_filter={"doc_level": {"$eq": "child"}}
         )
-        print('result: ', result)
+        print('result of opensearch: ', result)
                 
         relevant_documents = []
         docList = []
@@ -1441,10 +1441,10 @@ def retrieve_docs_from_RAG(revised_question, connectionId, requestId, bedrock_em
     for doc in selected_relevant_docs:        
         doc = get_parent_document(doc) # use pareant document
         
-        print('excerpt: ', doc['metadata']['excerpt'])
+        # print('excerpt: ', doc['metadata']['excerpt'])
         if doc['metadata']['excerpt'] in contentList:
             print('duplicated!')
-            continue        
+            continue
         contentList.append(doc['metadata']['excerpt'])
         update_docs.append(doc)
     
@@ -1673,8 +1673,11 @@ def search_by_opensearch(keyword: str) -> str:
             doc_level = document[0].metadata['doc_level']
             print(f"child: parent_doc_id: {parent_doc_id}, doc_level: {doc_level}")
                 
-            excerpt, name, uri, doc_level = get_parent_document(parent_doc_id) # use pareant document
-            print(f"parent: name: {name}, uri: {uri}, doc_level: {doc_level}")
+            doc = get_parent_document(document[0]) # use pareant document
+            excerpt = doc['metadata']['excerpt']
+            uri = doc['metadata']['uri']
+            
+            print(f"parent_doc_id: {parent_doc_id}, doc_level: {doc_level}, uri: {uri}, content: {excerpt}")
             
             answer = answer + f"{excerpt}, URL: {uri}\n\n"
     else: 
@@ -1884,7 +1887,7 @@ def getResponse(connectionId, jsonBody):
     profile = LLM_for_chat[selected_chat]
     bedrock_region =  profile['bedrock_region']
     modelId = profile['model_id']
-    print(f'selected_chat: {selected_chat}, bedrock_region: {bedrock_region}, modelId: {modelId}')
+    # print(f'selected_chat: {selected_chat}, bedrock_region: {bedrock_region}, modelId: {modelId}')
     # print('profile: ', profile)
     
     chat = get_chat()    
