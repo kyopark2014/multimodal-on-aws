@@ -554,7 +554,7 @@ def extract_images_from_pdf(reader, key):
             print('image_file_object: ', image_file_object)    
         
         dst_pdf = PyPDF2.PdfWriter()
-        dst_pdf.add_page (page)
+        dst_pdf.addPage(page)
 
         pdf_bytes = BytesIO()
         dst_pdf.write(pdf_bytes)
