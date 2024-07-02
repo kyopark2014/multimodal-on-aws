@@ -563,15 +563,16 @@ def extract_images_from_pdf(reader, key):
         dst_pdf.add_page(page)
 
         pdf_bytes = BytesIO()
-        dst_pdf.write(pdf_bytes)
+        page.save(pdf_bytes, format="png")
+        #dst_pdf.write(pdf_bytes)
         pdf_bytes.seek(0)
         
-        img = Image.open(BytesIO(pdf_bytes))
+        #img = Image.open(BytesIO(pdf_bytes))
         
         #from pdf2image import convert_from_path, convert_from_bytes
         #img = convert_from_bytes(page.read())
         #img = convert_from_bytes(pdf_bytes.getvalue())
-        img.convert("png")
+        #img.convert("png")
 
         #img = Image(file = pdf_bytes, resolution = 300)
         #img.convert("png")
@@ -582,7 +583,7 @@ def extract_images_from_pdf(reader, key):
             Bucket=s3_bucket,
             Key='capture/'+fname+'.png',
             ContentType='image/png',
-            Body=img
+            Body=pdf_bytes
         )
         print('response: ', response)
         
