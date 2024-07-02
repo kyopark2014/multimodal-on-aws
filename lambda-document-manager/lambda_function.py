@@ -855,8 +855,11 @@ def load_document(file_type, key):
                 pdf_bytes = BytesIO()
                 dst_pdf.write(pdf_bytes)
                 pdf_bytes.seek(0)
+                
+                from pdf2image import convert_from_bytes
+                img = convert_from_bytes(pdf_bytes)
 
-                img = Image(file = pdf_bytes, resolution = 300)
+                # img = Image(file = pdf_bytes, resolution = 300)
                 # img.convert("png")
                 
                 pixels = BytesIO()
