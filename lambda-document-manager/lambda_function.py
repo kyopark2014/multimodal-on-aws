@@ -857,7 +857,7 @@ def load_document(file_type, key):
                 pdf_bytes.seek(0)
                 
                 from pdf2image import convert_from_bytes
-                img = convert_from_bytes(pdf_bytes)
+                img = convert_from_bytes(dst_pdf, fmt="png")
 
                 # img = Image(file = pdf_bytes, resolution = 300)
                 # img.convert("png")
