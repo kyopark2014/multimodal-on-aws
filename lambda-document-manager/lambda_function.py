@@ -553,10 +553,10 @@ def extract_images_from_pdf(reader, key):
         for image_file_object in page.images:
             print('image_file_object: ', image_file_object)    
             
-        page.merge_transformed_page(
-            watermark_page,
-            Transformation(),
-        )
+        #page.merge_transformed_page(
+        #    watermark_page,
+        #    Transformation(),
+        #)
         
         from pypdf import PdfReader, PdfWriter
         dst_pdf =  PdfWriter()
