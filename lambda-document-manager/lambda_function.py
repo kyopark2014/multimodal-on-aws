@@ -566,9 +566,11 @@ def extract_images_from_pdf(reader, key):
         dst_pdf.write(pdf_bytes)
         pdf_bytes.seek(0)
         
-        from pdf2image import convert_from_path, convert_from_bytes
+        img = Image.open(BytesIO(pdf_bytes))
+        
+        #from pdf2image import convert_from_path, convert_from_bytes
         #img = convert_from_bytes(page.read())
-        img = convert_from_bytes(pdf_bytes.getvalue())
+        #img = convert_from_bytes(pdf_bytes.getvalue())
         img.convert("png")
 
         #img = Image(file = pdf_bytes, resolution = 300)
