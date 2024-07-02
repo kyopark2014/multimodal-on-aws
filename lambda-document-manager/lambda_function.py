@@ -848,7 +848,8 @@ def load_document(file_type, key):
     files = []
     contents = ""
     if file_type == 'pdf':
-        Byte_contents = doc.get()['Body'].read()
+        #Byte_contents = doc.get()['Body'].read()
+        Byte_contents = doc['Body'].read()
         
         from pdf2image import convert_from_bytes
         pages = convert_from_bytes(Byte_contents, fmt='png')
