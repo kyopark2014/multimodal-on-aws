@@ -546,6 +546,11 @@ def extract_images_from_pdf(reader, key):
     extracted_image_files = []
     print('page length: ', len(reader.pages))
     
+    from pdf2image import convert_from_bytes
+    pages = convert_from_bytes(reader)
+    for page in pages:
+        print('page: ', page)
+    
     for i, page in enumerate(reader.pages):
         print('page: ', page)        
         print('resources: ', page['/Resources']['/ProcSet'])
