@@ -530,17 +530,17 @@ def extract_images_from_pdf(reader, key):
     
     """
                 for page_num in range(len(reader.pages)):
-                dst_pdf = PyPDF2.PdfWriter()
-                dst_pdf.add_page (reader.pages[page_num])
+                    dst_pdf = PyPDF2.PdfWriter()
+                    dst_pdf.add_page (reader.pages[page_num])
 
-                pdf_bytes = BytesIO()
-                dst_pdf.write(pdf_bytes)
-                pdf_bytes.seek(0)
+                    pdf_bytes = BytesIO()
+                    dst_pdf.write(pdf_bytes)
+                    pdf_bytes.seek(0)
 
-                img = Image(file = pdf_bytes, resolution = 300)
-                ## Choose one format for the output 
-                img.convert("png") # ('tiff')
-                img.save(filename = "your_file_name") 
+                    img = Image(file = pdf_bytes, resolution = 300)
+                    ## Choose one format for the output 
+                    img.convert("png") # ('tiff')
+                    img.save(filename = "your_file_name") 
     """
     
     extracted_image_files = []
@@ -552,15 +552,29 @@ def extract_images_from_pdf(reader, key):
         dst_pdf = PyPDF2.PdfFileWriter()
         dst_pdf.add_page (page)
 
+        pdf_bytes = BytesIO()
+        dst_pdf.write(pdf_bytes)
+        pdf_bytes.seek(0)
+
+        img = Image(file = pdf_bytes, resolution = 300)
+        # img.convert("png")
+        
         pixels = BytesIO()
-        dst_pdf.write(pixels)
-        pixels.seek(0)
+        img.save(pixels, "png")
+        pixels.seek(0, 0)
+        
+        fname = 'pdfimg_'+key.split('/')[-1].split('.')[0]    
+        img.seek(0, 0)
+        response = s3_client.put_object(
+            Bucket=s3_bucket,
+            Key='photo/'+fname+'.png',
+            ContentType='image/png',
+            Body=pixels
+        )
+        
+        #print('width: ', img.)
 
-        # img = Image(file = pdf_bytes, resolution = 300)
-        #img = Image(file = pixels, resolution = 300)
-        #img.convert("png")
-
-        contentType = 'image/png'
+       # contentType = 'image/png'
         
         #pixels = BytesIO(image_bytes)
         #pixels.seek(0, 0)
