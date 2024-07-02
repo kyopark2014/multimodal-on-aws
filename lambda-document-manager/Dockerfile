@@ -14,5 +14,6 @@ RUN /var/lang/bin/python3 -m pip install pypdf
 RUN /var/lang/bin/python3 -m pip install pycryptodome
 RUN /var/lang/bin/python3 -m pip install python-pptx
 RUN /var/lang/bin/python3 -m pip install python-docx
+RUN /var/lang/bin/python3 -m pip install pdf2image
 
 CMD ["lambda_function.lambda_handler"]

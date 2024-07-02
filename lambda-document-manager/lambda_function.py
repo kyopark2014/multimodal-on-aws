@@ -533,7 +533,6 @@ def extract_images_from_pdf(reader, key):
     for i, page in enumerate(reader.pages):
         print('page: ', page)
         
-        
         for image_file_object in page.images:
             print('image_file_object: ', image_file_object)        
             #pixels = BytesIO(image_file_object.data)
@@ -760,9 +759,14 @@ def load_document(file_type, key):
             from pypdf import PdfReader
             reader = PdfReader(BytesIO(Byte_contents))
             
-            if enableImageExtraction == 'true':
-                image_files = extract_images_from_pdf(reader, key)                
-                for img in image_files:
+            #if enableImageExtraction == 'true':
+            #    image_files = extract_images_from_pdf(reader, key)                
+            #    for img in image_files:
+            #        files.append(img)
+        
+            from pdf2image import convert_from_bytes
+            images = convert_from_bytes(reader)         
+            for img in images:
                     files.append(img)
                     
         except Exception:
