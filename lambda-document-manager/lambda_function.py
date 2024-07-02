@@ -566,11 +566,11 @@ def extract_images_from_pdf(reader, key):
         dst_pdf.write(pdf_bytes)
         pdf_bytes.seek(0)
 
-        img = Image(file = pdf_bytes, resolution = 300)
-        img.convert("png")
+        #img = Image(file = pdf_bytes, resolution = 300)
+        #img.convert("png")
         
         fname = 'img_'+key.split('/')[-1].split('.')[0]+f"_{picture_count}"  
-        img.seek(0, 0)
+        #img.seek(0, 0)
         response = s3_client.put_object(
             Bucket=s3_bucket,
             Key='capture/'+fname+'.png',
