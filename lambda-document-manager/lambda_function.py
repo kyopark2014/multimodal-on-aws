@@ -747,6 +747,7 @@ def load_document(file_type, key):
     if file_type == 'pdf':
         Byte_contents = doc.get()['Body'].read()
         
+        """
         import fitz
         pages = fitz.open(stream=Byte_contents, filetype='pdf')
 
@@ -775,7 +776,7 @@ def load_document(file_type, key):
             print('response: ', response)
             
             picture_count = picture_count+1
-
+        """
         
         try: 
             # text
