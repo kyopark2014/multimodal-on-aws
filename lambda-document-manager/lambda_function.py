@@ -546,10 +546,7 @@ def extract_images_from_pdf(reader, key):
     extracted_image_files = []
     print('page length: ', len(reader.pages))
     
-    from pdf2image import convert_from_bytes
-    pages = convert_from_bytes(reader)
-    for page in pages:
-        print('page: ', page)
+    
     
     for i, page in enumerate(reader.pages):
         print('page: ', page)        
@@ -853,6 +850,45 @@ def load_document(file_type, key):
     if file_type == 'pdf':
         Byte_contents = doc.get()['Body'].read()
         
+        from pdf2image import convert_from_bytes
+        pages = convert_from_bytes(Byte_contents)
+        
+        picture_count = 0
+        for page in pages:
+            print('page: ', page)
+            
+            from pypdf import PdfReader, PdfWriter
+            dst_pdf =  PdfWriter()
+            dst_pdf.add_page(page)
+
+            pdf_bytes = BytesIO()
+            page.save(pdf_bytes, format="png")
+            #dst_pdf.write(pdf_bytes)
+            pdf_bytes.seek(0)
+            
+            #img = Image.open(BytesIO(pdf_bytes))
+            
+            #from pdf2image import convert_from_path, convert_from_bytes
+            #img = convert_from_bytes(page.read())
+            #img = convert_from_bytes(pdf_bytes.getvalue())
+            #img.convert("png")
+
+            #img = Image(file = pdf_bytes, resolution = 300)
+            #img.convert("png")
+            
+            fname = 'img_'+key.split('/')[-1].split('.')[0]+f"_{picture_count}"  
+            #img.seek(0, 0)
+            response = s3_client.put_object(
+                Bucket=s3_bucket,
+                Key='capture/'+fname+'.png',
+                ContentType='image/png',
+                Body=pdf_bytes
+            )
+            print('response: ', response)
+            
+            picture_count = picture_count+1
+        
+        
         try: 
             # text
             reader = PyPDF2.PdfReader(BytesIO(Byte_contents))
@@ -863,13 +899,13 @@ def load_document(file_type, key):
             contents = '\n'.join(texts)
             
             # extract image file 
-            from pypdf import PdfReader
-            reader = PdfReader(BytesIO(Byte_contents))
+            #from pypdf import PdfReader
+            #reader = PdfReader(BytesIO(Byte_contents))
             
-            if enableImageExtraction == 'true':
-                image_files = extract_images_from_pdf(reader, key)                
-                for img in image_files:
-                    files.append(img)
+            #if enableImageExtraction == 'true':
+            #    image_files = extract_images_from_pdf(reader, key)                
+            #    for img in image_files:
+            #        files.append(img)
         
             #from pdf2image import convert_from_bytes
             #images = convert_from_bytes(reader)         
