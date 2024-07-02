@@ -16,5 +16,6 @@ RUN /var/lang/bin/python3 -m pip install python-pptx
 RUN /var/lang/bin/python3 -m pip install python-docx
 RUN /var/lang/bin/python3 -m pip install pdf2image
 RUN /var/lang/bin/python3 -m pip install pillow
+RUN /var/lang/bin/python3 -m pip install python-poppler
 
 CMD ["lambda_function.lambda_handler"]
