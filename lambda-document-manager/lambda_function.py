@@ -544,10 +544,14 @@ def extract_images_from_pdf(reader, key):
     """
     
     extracted_image_files = []
-    print('pages: ', len(reader.pages))
+    print('page length: ', len(reader.pages))
     
     for i, page in enumerate(reader.pages):
-        print('page: ', page)
+        print('page: ', page)        
+        print('resources: ', page['/Resources']['/ProcSet'])
+        
+        for image_file_object in page.images:
+            print('image_file_object: ', image_file_object)    
         
         dst_pdf = PyPDF2.PdfWriter()
         dst_pdf.add_page (page)
@@ -571,6 +575,7 @@ def extract_images_from_pdf(reader, key):
             ContentType='image/png',
             Body=pixels
         )
+        print('response: ', response)
         
         #print('width: ', img.)
 
@@ -580,6 +585,8 @@ def extract_images_from_pdf(reader, key):
         #pixels.seek(0, 0)
                             
         # get path from key
+         
+        """
         objectName = (key[key.find(s3_prefix)+len(s3_prefix)+1:len(key)])
         folder = s3_prefix+'/files/'+objectName+'/'
         # print('folder: ', folder)
@@ -611,6 +618,7 @@ def extract_images_from_pdf(reader, key):
         picture_count += 1
                     
         extracted_image_files.append(img_key)
+        """
     """
     extracted_image_files = []
     print('pages: ', len(reader.pages))
