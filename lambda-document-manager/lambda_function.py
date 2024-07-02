@@ -852,7 +852,7 @@ def load_document(file_type, key):
         
         from pdf2image import convert_from_bytes
         #pages = convert_from_bytes(BytesIO(Byte_contents))
-        pages = convert_from_bytes(Byte_contents)
+        pages = convert_from_bytes(doc.get()['Body'])
         
         picture_count = 0
         for page in pages:
