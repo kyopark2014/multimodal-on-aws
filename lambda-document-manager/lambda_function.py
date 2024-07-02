@@ -553,19 +553,16 @@ def extract_images_from_pdf(reader, key):
         for image_file_object in page.images:
             print('image_file_object: ', image_file_object)    
         
-        dst_pdf =  PyPDF2.PdfWriter()
+        from pypdf import PdfReader, PdfWriter
+        dst_pdf =  PdfWriter()
         dst_pdf.add_page(page)
 
         pdf_bytes = BytesIO()
         dst_pdf.write(pdf_bytes)
         pdf_bytes.seek(0)
 
-        img = Image(file = pdf_bytes, resolution = 300)
+        #img = Image(file = pdf_bytes, resolution = 300)
         # img.convert("png")
-        
-        pixels = BytesIO()
-        img.save(pixels, "png")
-        pixels.seek(0, 0)
         
         fname = 'img_'+key.split('/')[-1].split('.')[0]+f"_{picture_count}"  
         img.seek(0, 0)
@@ -573,7 +570,7 @@ def extract_images_from_pdf(reader, key):
             Bucket=s3_bucket,
             Key='capture/'+fname+'.png',
             ContentType='image/png',
-            Body=pixels
+            Body=pdf_bytes
         )
         print('response: ', response)
         
@@ -847,45 +844,14 @@ def load_document(file_type, key):
                 texts.append(page.extract_text())
             contents = '\n'.join(texts)
             
-            picture_count = 0
-            for page in reader.pages:
-                dst_pdf =  PyPDF2.PdfWriter()
-                dst_pdf.add_page(page)
-
-                pdf_bytes = BytesIO()
-                dst_pdf.write(pdf_bytes)
-                pdf_bytes.seek(0)
-                
-                from pdf2image import convert_from_bytes
-                img = convert_from_bytes(dst_pdf, fmt="png")
-
-                # img = Image(file = pdf_bytes, resolution = 300)
-                # img.convert("png")
-                
-                pixels = BytesIO()
-                img.save(pixels, "png")
-                pixels.seek(0, 0)
-                
-                fname = 'img_'+key.split('/')[-1].split('.')[0]+f"_{picture_count}"  
-                img.seek(0, 0)
-                response = s3_client.put_object(
-                    Bucket=s3_bucket,
-                    Key='capture/'+fname+'.png',
-                    ContentType='image/png',
-                    Body=pixels
-                )
-                print('response: ', response)
-                
-                picture_count = picture_count+1
-            
             # extract image file 
             from pypdf import PdfReader
             reader = PdfReader(BytesIO(Byte_contents))
             
-            #if enableImageExtraction == 'true':
-            #    image_files = extract_images_from_pdf(reader, key)                
-            #    for img in image_files:
-            #        files.append(img)
+            if enableImageExtraction == 'true':
+                image_files = extract_images_from_pdf(reader, key)                
+                for img in image_files:
+                    files.append(img)
         
             #from pdf2image import convert_from_bytes
             #images = convert_from_bytes(reader)         
