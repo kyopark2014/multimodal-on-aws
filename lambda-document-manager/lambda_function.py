@@ -806,7 +806,6 @@ def load_document(file_type, key):
             print('response: ', response)
             
             picture_count = picture_count+1
-        """
         
         try: 
             # text
