@@ -746,7 +746,10 @@ def load_document(file_type, key):
     contents = ""
     if file_type == 'pdf':
         Byte_contents = doc.get()['Body'].read()
-                
+        
+        
+        
+        """
         pdf_file_bytes = bytes(Byte_contents)
         
         from pdf2image import convert_from_bytes
@@ -773,33 +776,32 @@ def load_document(file_type, key):
             print('response: ', response)
             
             picture_count = picture_count+1
-        
-        
         """
+        
         import fitz
         pages = fitz.open(stream=Byte_contents, filetype='pdf')
-
+        
         picture_count = 0
-        for page in pages:
-                
-            pix = page.get_pixmap()
+        for page in pages:                
+            pixmap = page.get_pixmap(dpi=300)
+            img = pixmap.tobytes()
 
-            img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
-            pixels = BytesIO()
-            img.save(pixels, format='PNG')
+            #img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
+            #pixels = BytesIO()
+            #img.save(pixels, format='PNG')
 
             #png_bio.getvalue()            
             #pixels = BytesIO()
             #img.save(pixels, "png")
-            pixels.seek(0, 0)
+            #pixels.seek(0, 0)
         
-            fname = 'mask_'+key.split('/')[-1].split('.')[0]+f"_{picture_count}"  
+            fname = 'capture/'+key.split('/')[-1].split('.')[0]+f"_{picture_count}"  
             # img.seek(0, 0)
             response = s3_client.put_object(
                 Bucket=s3_bucket,
-                Key='photo/'+fname+'.png',
-                ContentType='image/png',
-                Body=pixels
+                Key='photo/'+fname+'.jpg',
+                #ContentType='image/png',
+                Body=img
             )
             print('response: ', response)
             
