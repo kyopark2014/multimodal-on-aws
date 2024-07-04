@@ -782,7 +782,7 @@ def load_document(file_type, key):
                         Key='capture/'+fname+'.png',
                         #ContentType='image/png',
                         Metadata = {
-                            "type": 'png',
+                            "ext": 'png',
                             "page": i
                         },
                         Body=img
