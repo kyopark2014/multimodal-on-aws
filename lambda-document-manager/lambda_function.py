@@ -2,10 +2,10 @@ import json
 import boto3
 import os
 import traceback
-import PyPDF2
 import time
 import docx
 import base64
+import fitz
 
 from io import BytesIO
 from urllib import parse
@@ -24,6 +24,7 @@ from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_aws import ChatBedrock
 from pptx.enum.shapes import MSO_SHAPE_TYPE
 from docx.enum.shape import WD_INLINE_SHAPE_TYPE
+from pypdf import PdfReader   
 
 sqs = boto3.client('sqs')
 s3_client = boto3.client('s3')  
@@ -53,7 +54,8 @@ max_object_size = int(os.environ.get('max_object_size'))
 supportedFormat = json.loads(os.environ.get('supportedFormat'))
 print('supportedFormat: ', supportedFormat)
 
-enableImageExtraction = os.environ.get('enableImageExtraction')
+enableImageExtraction = 'false'
+enablePageImageExraction = 'true'
 
 os_client = OpenSearch(
     hosts = [{
@@ -748,22 +750,60 @@ def load_document(file_type, key):
         Byte_contents = doc.get()['Body'].read()
 
         try: 
-            # text
-            reader = PyPDF2.PdfReader(BytesIO(Byte_contents))
-            
+            # pdf reader
             texts = []
-            for page in reader.pages:
-                texts.append(page.extract_text())
-            contents = '\n'.join(texts)
-            
-            # extract image file 
-            from pypdf import PdfReader
             reader = PdfReader(BytesIO(Byte_contents))
+            print('pages: ', len(reader.pages))
             
+            # extract text
+            for i, page in enumerate(reader.pages):
+                print('page: ', page)
+                print('resources: ', page['/Resources']['/ProcSet'])
+                
+                texts.append(page.extract_text())
+            
+            contents = '\n'.join(texts)
+
+            # extract page images using PyMuPDF
+            if enablePageImageExraction=='true': 
+                pages = fitz.open(stream=Byte_contents, filetype='pdf')      
+            
+                for i, page in enumerate(pages, start=1):
+                    print('page: ', page)
+                    
+                    # save current pdf page to image 
+                    pixmap = page.get_pixmap(dpi=300)
+                    img = pixmap.tobytes()
+                
+                    fname = 'capture/'+key.split('/')[-1].split('.')[0]+f"_{i}"  
+
+                    response = s3_client.put_object(
+                        Bucket=s3_bucket,
+                        Key='capture/'+fname+'.jpg',
+                        #ContentType='image/png',
+                        Metadata = {
+                            "name": fname,
+                            "page": i
+                        },
+                        Body=img
+                    )
+                    print('response: ', response)
+                    
+                    # get path from key
+                    #objectName = (key[key.find(s3_prefix)+len(s3_prefix)+1:len(key)])
+                    #folder = s3_prefix+'/files/'+objectName+'/'
+                    #img_key = folder+img_name
+                    # print('folder: ', folder)
+                                
+                    files.append(fname)
+                                    
+                contents = '\n'.join(texts)
+                
+            # extract image files   
             if enableImageExtraction == 'true':
-                image_files = extract_images_from_pdf(reader, key)                
+                image_files = extract_images_from_pdf(reader, key)
                 for img in image_files:
-                    files.append(img)
+                    files.append(img)            
         
         except Exception:
                 err_msg = traceback.format_exc()
