@@ -781,10 +781,10 @@ def load_document(file_type, key):
                         Bucket=s3_bucket,
                         Key='capture/'+fname+'.jpg',
                         #ContentType='image/png',
-                        Metadata = {
-                            "name": fname,
-                            "page": i
-                        },
+                        #Metadata = {
+                        #    "name": fname,
+                        #    "page": i
+                        #},
                         Body=img
                     )
                     print('response: ', response)
