@@ -746,67 +746,7 @@ def load_document(file_type, key):
     contents = ""
     if file_type == 'pdf':
         Byte_contents = doc.get()['Body'].read()
-        
-        
-        
-        """
-        pdf_file_bytes = bytes(Byte_contents)
-        
-        from pdf2image import convert_from_bytes
-        images = convert_from_bytes(pdf_file_bytes, fmt='png')         
-        
-        picture_count = 0
-        for img in images:
-            pixels = BytesIO()
-            img.save(pixels, format='PNG')
 
-            #png_bio.getvalue()            
-            #pixels = BytesIO()
-            #img.save(pixels, "png")
-            pixels.seek(0, 0)
-        
-            fname = 'capture/'+key.split('/')[-1].split('.')[0]+f"_{picture_count}"  
-            # img.seek(0, 0)
-            response = s3_client.put_object(
-                Bucket=s3_bucket,
-                Key='photo/'+fname+'.png',
-                ContentType='image/png',
-                Body=pixels
-            )
-            print('response: ', response)
-            
-            picture_count = picture_count+1
-        """
-        
-        import fitz
-        pages = fitz.open(stream=Byte_contents, filetype='pdf')
-        
-        picture_count = 0
-        for page in pages:                
-            pixmap = page.get_pixmap(dpi=300)
-            img = pixmap.tobytes()
-
-            #img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
-            #pixels = BytesIO()
-            #img.save(pixels, format='PNG')
-
-            #png_bio.getvalue()            
-            #pixels = BytesIO()
-            #img.save(pixels, "png")
-            #pixels.seek(0, 0)
-        
-            fname = 'capture/'+key.split('/')[-1].split('.')[0]+f"_{picture_count}"  
-            # img.seek(0, 0)
-            response = s3_client.put_object(
-                Bucket=s3_bucket,
-                Key='photo/'+fname+'.jpg',
-                #ContentType='image/png',
-                Body=img
-            )
-            print('response: ', response)
-            
-            picture_count = picture_count+1
-        
         try: 
             # text
             reader = PyPDF2.PdfReader(BytesIO(Byte_contents))
@@ -825,11 +765,6 @@ def load_document(file_type, key):
                 for img in image_files:
                     files.append(img)
         
-            #from pdf2image import convert_from_bytes
-            #images = convert_from_bytes(reader)         
-            #for img in images:
-            #        files.append(img)
-                                
         except Exception:
                 err_msg = traceback.format_exc()
                 print('err_msg: ', err_msg)

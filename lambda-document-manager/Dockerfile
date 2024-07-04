@@ -11,11 +11,10 @@ RUN /var/lang/bin/python3 -m pip install langchain-aws
 RUN /var/lang/bin/python3 -m pip install opensearch-py
 RUN /var/lang/bin/python3 -m pip install PyPDF2
 RUN /var/lang/bin/python3 -m pip install pypdf
+RUN /var/lang/bin/python3 -m pip install PyMuPDF
 RUN /var/lang/bin/python3 -m pip install pycryptodome
 RUN /var/lang/bin/python3 -m pip install python-pptx
 RUN /var/lang/bin/python3 -m pip install python-docx
 RUN /var/lang/bin/python3 -m pip install pdf2image
 RUN /var/lang/bin/python3 -m pip install pillow
-#RUN /var/lang/bin/python3 -m pip install poppler-utils
-RUN /var/lang/bin/python3 -m pip install PyMuPDF
 CMD ["lambda_function.lambda_handler"]
