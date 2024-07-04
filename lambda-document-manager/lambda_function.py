@@ -769,7 +769,7 @@ def load_document(file_type, key):
                 pages = fitz.open(stream=Byte_contents, filetype='pdf')      
             
                 for i, page in enumerate(pages):
-                    print('page: ', page)
+                    # print('page: ', page)
                     
                     # save current pdf page to image 
                     pixmap = page.get_pixmap(dpi=300, alpha=True)
@@ -783,7 +783,7 @@ def load_document(file_type, key):
                         #ContentType='image/png',
                         Metadata = {
                             "ext": 'png',
-                            "page": i
+                            "page": str(i)
                         },
                         Body=img
                     )
