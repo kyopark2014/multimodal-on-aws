@@ -768,21 +768,21 @@ def load_document(file_type, key):
             if enablePageImageExraction=='true': 
                 pages = fitz.open(stream=Byte_contents, filetype='pdf')      
             
-                for i, page in enumerate(pages, start=1):
+                for i, page in enumerate(pages):
                     print('page: ', page)
                     
                     # save current pdf page to image 
-                    pixmap = page.get_pixmap(dpi=300)
+                    pixmap = page.get_pixmap(dpi=300, alpha=True)
                     img = pixmap.tobytes()
                 
-                    fname = 'capture/'+key.split('/')[-1].split('.')[0]+f"_{i}"  
+                    fname = key.split('/')[-1].split('.')[0]+f"_{i+1}"  
 
                     response = s3_client.put_object(
                         Bucket=s3_bucket,
-                        Key='capture/'+fname+'.jpg',
+                        Key='capture/'+fname+'.png',
                         #ContentType='image/png',
                         Metadata = {
-                            "type": 'jpg',
+                            "type": 'png',
                             "page": i
                         },
                         Body=img
