@@ -246,7 +246,7 @@ def store_document_for_opensearch(file_type, key):
             'uri': path+parse.quote(key)
         }
     ))
-    print('docs: ', docs)
+    # print('docs: ', docs)
     
     ids = add_to_opensearch(docs, key)    
     
@@ -448,7 +448,7 @@ if enableHybridSearch == 'true':
 def add_to_opensearch(docs, key):    
     if len(docs) == 0:
         return []    
-    print('docs[0]: ', docs[0])       
+    # print('docs[0]: ', docs[0])       
     
     objectName = (key[key.find(s3_prefix)+len(s3_prefix)+1:len(key)])
     print('objectName: ', objectName)    
@@ -480,7 +480,7 @@ def add_to_opensearch(docs, key):
             
             for i, doc in enumerate(parent_docs):
                 doc.metadata["doc_level"] = "parent"
-                print(f"parent_docs[{i}]: {doc}")
+                # print(f"parent_docs[{i}]: {doc}")
                     
             try:        
                 parent_doc_ids = vectorstore.add_documents(parent_docs, bulk_size = 10000)
@@ -769,7 +769,7 @@ def load_document(file_type, key):
                 pages = fitz.open(stream=Byte_contents, filetype='pdf')      
             
                 for i, page in enumerate(pages):
-                    # print('page: ', page)
+                    print('page: ', page)
                     
                     # save current pdf page to image 
                     pixmap = page.get_pixmap(dpi=300, alpha=True)
