@@ -54,7 +54,7 @@ max_object_size = int(os.environ.get('max_object_size'))
 supportedFormat = json.loads(os.environ.get('supportedFormat'))
 print('supportedFormat: ', supportedFormat)
 
-enableImageExtraction = 'false'
+enableImageExtraction = 'true'
 enablePageImageExraction = 'true'
 
 os_client = OpenSearch(
@@ -787,6 +787,7 @@ def load_document(file_type, key):
                 #`.data` : bytes of the object
                 #`.image`  : PIL Image Object
                 #`.indirect_reference` : object reference
+                print('# of page.images: ', len(page.images))
                 for image_file_object in page.images:
                     print('image_file_object: ', image_file_object)
                     img_name = image_file_object.name
@@ -850,7 +851,7 @@ def load_document(file_type, key):
             if enableImageExtraction == 'true':
                 image_files = extract_images_from_pdf(reader, key)
                 for img in image_files:
-                    files.append(img)            
+                    files.append(img)
         
         except Exception:
                 err_msg = traceback.format_exc()
