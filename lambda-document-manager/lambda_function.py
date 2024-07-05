@@ -534,11 +534,13 @@ def extract_images_from_pdf(reader, key):
     print('pages: ', len(reader.pages))
     for i, page in enumerate(reader.pages):
         print('page: ', page)
-        print('resources: ', page['/Resources']['/ProcSet'])
+        if '/ProcSet' in page['/Resources']:
+            print('Resources/ProcSet: ', page['/Resources']['/ProcSet'])        
+        if '/XObject' in page['/Resources']:
+            print(f"Resources/XObject[{i}]: {page['/Resources']['/XObject']}")
         
         for image_file_object in page.images:
-            print('image_file_object: ', image_file_object)        
-            #pixels = BytesIO(image_file_object.data)
+            print('image_file_object: ', image_file_object)
             
             img_name = image_file_object.name
             print('img_name: ', img_name)
@@ -759,6 +761,7 @@ def load_document(file_type, key):
             for i, page in enumerate(reader.pages):
                 print(f"page[{i}]: {page}")
                 
+                # annotation
                 #if '/Type' in page:
                 #    print(f"Type[{i}]: {page['/Type']}")                
                 #if '/Annots' in page:
@@ -790,38 +793,45 @@ def load_document(file_type, key):
                 for i, page in enumerate(pages):
                     print('page: ', page)
                     
-                    # save current pdf page to image 
-                    pixmap = page.get_pixmap(dpi=200)  # dpi=300
-                    #pixels = pixmap.tobytes() # output: jpg
+                    imgInfo = page.get_image_info()
+                    print(f"imgInfo[{i}]: ', {imgInfo}")
                     
-                    # convert to png
-                    img = Image.frombytes("RGB", [pixmap.width, pixmap.height], pixmap.samples)
-                    pixels = BytesIO()
-                    img.save(pixels, format='PNG')
-                    pixels.seek(0, 0)
-                                    
-                    # get path from key
-                    objectName = (key[key.find(s3_prefix)+len(s3_prefix)+1:len(key)])
-                    folder = s3_prefix+'/captures/'+objectName+'/'
-                    print('folder: ', folder)
-                            
-                    fname = 'img_'+key.split('/')[-1].split('.')[0]+f"_{picture_count}"  
-                    print('fname: ', fname)          
-                    picture_count = picture_count+1          
+                    imgList = page.get_images()
+                    print(f"imgList[{i}]: ', {imgList}")
+                    
+                    if imgList:
+                        # save current pdf page to image 
+                        pixmap = page.get_pixmap(dpi=200)  # dpi=300
+                        #pixels = pixmap.tobytes() # output: jpg
+                        
+                        # convert to png
+                        img = Image.frombytes("RGB", [pixmap.width, pixmap.height], pixmap.samples)
+                        pixels = BytesIO()
+                        img.save(pixels, format='PNG')
+                        pixels.seek(0, 0)
+                                        
+                        # get path from key
+                        objectName = (key[key.find(s3_prefix)+len(s3_prefix)+1:len(key)])
+                        folder = s3_prefix+'/captures/'+objectName+'/'
+                        print('folder: ', folder)
+                                
+                        fname = 'img_'+key.split('/')[-1].split('.')[0]+f"_{picture_count}"  
+                        print('fname: ', fname)          
+                        picture_count = picture_count+1          
 
-                    response = s3_client.put_object(
-                        Bucket=s3_bucket,
-                        Key=folder+fname+'.png',
-                        ContentType='image/png',
-                        Metadata = {
-                            "ext": 'png',
-                            "page": str(i+1)
-                        },
-                        Body=pixels
-                    )
-                    print('response: ', response)
-                                                    
-                    files.append(fname)
+                        response = s3_client.put_object(
+                            Bucket=s3_bucket,
+                            Key=folder+fname+'.png',
+                            ContentType='image/png',
+                            Metadata = {
+                                "ext": 'png',
+                                "page": str(i+1)
+                            },
+                            Body=pixels
+                        )
+                        print('response: ', response)
+                                                        
+                        files.append(fname)
                                     
                 contents = '\n'.join(texts)
                 
