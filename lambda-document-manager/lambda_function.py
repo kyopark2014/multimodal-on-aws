@@ -776,7 +776,7 @@ def load_document(file_type, key):
                     # img = pixmap.tobytes() # output: jpg
                     
                     # convert to png
-                    img = Image.frombytes("RGB", [pixmap.width, pixmap.height], pixmap.samples)
+                    # img = Image.frombytes("RGB", [pixmap.width, pixmap.height], pixmap.samples)
                     pixels = BytesIO()
                     img.save(pixels, format='PNG')
                     pixels.seek(0, 0)
