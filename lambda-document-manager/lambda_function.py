@@ -782,7 +782,18 @@ def load_document(file_type, key):
                         print(f"Resources/XObject[{i}]: {page['/Resources']['/XObject']}")
                 
                 texts.append(page.extract_text())
-            
+                
+                #`.name` : name of the object
+                #`.data` : bytes of the object
+                #`.image`  : PIL Image Object
+                #`.indirect_reference` : object reference
+                for image_file_object in page.images:
+                    print('image_file_object: ', image_file_object)
+                    img_name = image_file_object.name
+                    print('img_name: ', img_name)                    
+                    indirect_reference = image_file_object.IndirectObject
+                    print('indirect_reference: ', indirect_reference)
+                        
             contents = '\n'.join(texts)
 
             # extract page images using PyMuPDF
