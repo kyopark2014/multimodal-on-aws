@@ -661,7 +661,7 @@ export class CdkMultimodalStack extends cdk.Stack {
           opensearch_url: opensearch_url,
           roleArn: roleLambdaWebsocket.roleArn,
           path: 'https://'+distribution.domainName+'/', 
-          sqsUrl: queueUrl[i],
+        //  sqsUrl: queueUrl[i],
           max_object_size: String(max_object_size),
           supportedFormat: supportedFormat,
           LLM_for_chat: JSON.stringify(claude3_sonnet_for_workshop),
@@ -673,7 +673,7 @@ export class CdkMultimodalStack extends cdk.Stack {
         }
       });         
       s3Bucket.grantReadWrite(lambdDocumentManager[i]); // permission for s3
-      lambdDocumentManager[i].addEventSource(new SqsEventSource(queue[i])); // permission for SQS
+    //  lambdDocumentManager[i].addEventSource(new SqsEventSource(queue[i])); // permission for SQS
     }
     
     // s3 event source
