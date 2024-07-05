@@ -635,7 +635,7 @@ export class CdkMultimodalStack extends cdk.Stack {
         deliveryDelay: cdk.Duration.millis(0),
         retentionPeriod: cdk.Duration.days(2),
         deadLetterQueue: {
-          maxReceiveCount: 4,
+          maxReceiveCount: 1,
           queue: dlq[i]
         }
       });
