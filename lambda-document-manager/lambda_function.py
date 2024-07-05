@@ -778,7 +778,7 @@ def load_document(file_type, key):
                     # convert to png
                     # img = Image.frombytes("RGB", [pixmap.width, pixmap.height], pixmap.samples)
                     pixels = BytesIO()
-                    img.save(pixels, format='PNG')
+                    pixmap.save(pixels, format='PNG')
                     pixels.seek(0, 0)
                                     
                     fname = key.split('/')[-1].split('.')[0]+f"_{i+1}"  
