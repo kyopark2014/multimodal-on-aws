@@ -799,10 +799,18 @@ def load_document(file_type, key):
                     print('page: ', page)
                     
                     imgInfo = page.get_image_info()
-                    print(f"imgInfo[{i}]: ', {imgInfo}")
+                    print(f"imgInfo[{i}]: ', {imgInfo}")         
+                    
+                    xres = yres = 100 #initialize
+                    if imgInfo:
+                        bbox = imgInfo[0]['bbox']
+                        print(f"bbox[{i}]: {bbox}")
+                        xres = imgInfo[0]['xres']
+                        yres = imgInfo[0]['yres']
+                        print(f"xres[{i}]: {xres}, yres[{i}]: {yres}")
                     
                     print(f"nImages[{i}]: {nImages[i]}")  # number of XObjects
-                    if nImages[i]:
+                    if nImages[i] and (xres>=100 and yres>=100):
                         # save current pdf page to image 
                         pixmap = page.get_pixmap(dpi=200)  # dpi=300
                         #pixels = pixmap.tobytes() # output: jpg
