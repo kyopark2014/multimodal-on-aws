@@ -788,7 +788,7 @@ def load_document(file_type, key):
                     print('page: ', page)
                     
                     # save current pdf page to image 
-                    pixmap = page.get_pixmap()  # dpi=300
+                    pixmap = page.get_pixmap(dpi=150)  # dpi=300
                     #pixels = pixmap.tobytes() # output: jpg
                     
                     # convert to png
