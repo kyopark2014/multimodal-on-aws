@@ -812,7 +812,7 @@ def load_document(file_type, key):
                         print(f"page[{i}] -> (image) width[{j}]: {info['width']}, height[{j}]: {info['height']}")
                         
                     print(f"nImages[{i}]: {nImages[i]}")  # number of XObjects
-                    if nImages[i] and \
+                    if nImages[i] and not (width>=940 and height>520) and \
                         ((width==0 and height==0) or (width>=100 and height>=100)):
                         # save current pdf page to image 
                         pixmap = page.get_pixmap(dpi=200)  # dpi=300
