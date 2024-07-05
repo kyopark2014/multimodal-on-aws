@@ -801,16 +801,19 @@ def load_document(file_type, key):
                     imgInfo = page.get_image_info()
                     print(f"imgInfo[{i}]: ', {imgInfo}")         
                     
-                    xres = yres = 100 #initialize
-                    if imgInfo:
-                        bbox = imgInfo[0]['bbox']
+                    width = height = 0
+                    for i, info in enumerate(imgInfo):
+                        bbox = info['bbox']
                         print(f"bbox[{i}]: {bbox}")
-                        xres = imgInfo[0]['xres']
-                        yres = imgInfo[0]['yres']
-                        print(f"xres[{i}]: {xres}, yres[{i}]: {yres}")
+                        if info['width']>width:
+                            width = info['width']
+                        if info['height']>height:
+                            height = info['height']
+                        print(f"width[{i}]: {width}, height[{i}]: {height}")
                     
                     print(f"nImages[{i}]: {nImages[i]}")  # number of XObjects
-                    if nImages[i] and (xres>=100 and yres>=100):
+                    if nImages[i] and \
+                        ((width==0 and height==0) or (width>=100 and height>=100)):
                         # save current pdf page to image 
                         pixmap = page.get_pixmap(dpi=200)  # dpi=300
                         #pixels = pixmap.tobytes() # output: jpg
