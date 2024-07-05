@@ -759,21 +759,22 @@ def load_document(file_type, key):
             for i, page in enumerate(reader.pages):
                 print(f"page[{i}]: {page}")
                 
-                if '/Type' in page:
-                    print(f"Type[{i}]: {page['/Type']}")                
-                if '/Annots' in page:
-                    print(f"Annots[{i}]: {page['/Annots']}")
+                #if '/Type' in page:
+                #    print(f"Type[{i}]: {page['/Type']}")                
+                #if '/Annots' in page:
+                #    print(f"Annots[{i}]: {page['/Annots']}")
                 if '/Group' in page:
                     print(f"Group[{i}]: {page['/Group']}")
                 if '/Contents' in page:                
                     print(f"Contents[{i}]: {page['/Contents']}")                    
-                if '/MediaBox' in page:                
-                    print(f"MediaBox[{i}]: {page['/MediaBox']}")                    
-                if '/Parent' in page:
-                    print(f"Parent[{i}]: {page['/Parent']}")
+                #if '/MediaBox' in page:                
+                #    print(f"MediaBox[{i}]: {page['/MediaBox']}")                    
+                #if '/Parent' in page:
+                #    print(f"Parent[{i}]: {page['/Parent']}")
                 if '/Resources' in page:                    
                     print(f"Resources[{i}]: {page['/Resources']}")
                     print(f"Resources/ProcSet[{i}]: {page['/Resources']['/ProcSet']}")
+                    print(f"Resources/XObject[{i}]: {page['/Resources']['/XObject']}")
                 
                 texts.append(page.extract_text())
             
