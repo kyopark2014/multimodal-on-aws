@@ -773,9 +773,10 @@ def load_document(file_type, key):
                     
                     # save current pdf page to image 
                     pixmap = page.get_pixmap(dpi=300, alpha=True)
-                    # img = pixmap.tobytes()
+                    # img = pixmap.tobytes() # output: jpg
                     
-                    img = Image.frombytes("RGB", [img.width, img.height], img.samples)
+                    # convert to png
+                    img = Image.frombytes("RGB", [pixmap.width, pixmap.height], pixmap.samples)
                     pixels = BytesIO()
                     img.save(pixels, format='PNG')
                     pixels.seek(0, 0)
