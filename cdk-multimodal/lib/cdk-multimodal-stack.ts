@@ -610,6 +610,19 @@ export class CdkMultimodalStack extends cdk.Stack {
     }); 
 
     // S3 - Lambda(S3 event) - SQS(fifo) - Lambda(document)
+    // DLQ
+    let dlq:any[] = [];
+    for(let i=0;i<LLM_embedding.length;i++) {
+      dlq[i] = new sqs.Queue(this, 'DlqS3EventFifo'+i, {
+        visibilityTimeout: cdk.Duration.seconds(600),
+        queueName: `dlq-s3-event-for-${projectName}-${i}.fifo`,  
+        fifo: true,
+        contentBasedDeduplication: false,
+        deliveryDelay: cdk.Duration.millis(0),
+        retentionPeriod: cdk.Duration.days(14),
+      });
+    }
+
     // SQS for S3 event (fifo) 
     let queueUrl:string[] = [];
     let queue:any[] = [];
@@ -621,6 +634,10 @@ export class CdkMultimodalStack extends cdk.Stack {
         contentBasedDeduplication: false,
         deliveryDelay: cdk.Duration.millis(0),
         retentionPeriod: cdk.Duration.days(2),
+        deadLetterQueue: {
+          maxReceiveCount: 4,
+          queue: dlq[i]
+        }
       });
       queueUrl.push(queue[i].queueUrl);
     }
