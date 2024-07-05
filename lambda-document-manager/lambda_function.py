@@ -774,18 +774,22 @@ def load_document(file_type, key):
                     # save current pdf page to image 
                     pixmap = page.get_pixmap(dpi=300, alpha=True)
                     img = pixmap.tobytes()
-                
+                    
+                    img = Image.frombytes("RGB", [img.width, img.height], img.samples)
+                    pixels = BytesIO()
+                    img.save(pixels, format='PNG')
+                                    
                     fname = key.split('/')[-1].split('.')[0]+f"_{i+1}"  
 
                     response = s3_client.put_object(
                         Bucket=s3_bucket,
                         Key='capture/'+fname+'.png',
-                        #ContentType='image/png',
+                        ContentType='image/png',
                         Metadata = {
                             "ext": 'png',
                             "page": str(i)
                         },
-                        Body=img
+                        Body=pixels
                     )
                     print('response: ', response)
                     
