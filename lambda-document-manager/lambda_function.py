@@ -54,7 +54,7 @@ max_object_size = int(os.environ.get('max_object_size'))
 supportedFormat = json.loads(os.environ.get('supportedFormat'))
 print('supportedFormat: ', supportedFormat)
 
-enableImageExtraction = 'true'
+enableImageExtraction = 'false'
 enablePageImageExraction = 'true'
 
 os_client = OpenSearch(
@@ -751,15 +751,17 @@ def load_document(file_type, key):
     if file_type == 'pdf':
         Byte_contents = doc.get()['Body'].read()
 
+        texts = []
+        nImages = []
         try: 
-            # pdf reader
-            texts = []
+            # pdf reader            
             reader = PdfReader(BytesIO(Byte_contents))
             print('pages: ', len(reader.pages))
             
             # extract text
             for i, page in enumerate(reader.pages):
                 print(f"page[{i}]: {page}")
+                texts.append(page.extract_text())
                 
                 # annotation
                 #if '/Type' in page:
@@ -774,27 +776,17 @@ def load_document(file_type, key):
                 #    print(f"MediaBox[{i}]: {page['/MediaBox']}")                    
                 #if '/Parent' in page:
                 #    print(f"Parent[{i}]: {page['/Parent']}")
+                nImage = 0
                 if '/Resources' in page:                    
                     print(f"Resources[{i}]: {page['/Resources']}")
                     if '/ProcSet' in page['/Resources']:
                         print(f"Resources/ProcSet[{i}]: {page['/Resources']['/ProcSet']}")
                     if '/XObject' in page['/Resources']:
                         print(f"Resources/XObject[{i}]: {page['/Resources']['/XObject']}")
-                
-                texts.append(page.extract_text())
-                
-                #`.name` : name of the object
-                #`.data` : bytes of the object
-                #`.image`  : PIL Image Object
-                #`.indirect_reference` : object reference
-                print('# of page.images: ', len(page.images))
-                for image_file_object in page.images:
-                    print('image_file_object: ', image_file_object)
-                    img_name = image_file_object.name
-                    print('img_name: ', img_name)                    
-                    indirect_reference = image_file_object.IndirectObject
-                    print('indirect_reference: ', indirect_reference)
-                        
+                        nImage = len(page['/Resources']['/XObject'])                
+                print(f"# of images of page[{i}] = {nImage}")
+                nImages.append(nImage)
+                                        
             contents = '\n'.join(texts)
 
             # extract page images using PyMuPDF
@@ -811,7 +803,8 @@ def load_document(file_type, key):
                     imgList = page.get_images()
                     print(f"imgList[{i}]: ', {imgList}")
                     
-                    if imgList:
+                    print(f"nImages[{i}]: {nImages[i]}")
+                    if nImages[i]:
                         # save current pdf page to image 
                         pixmap = page.get_pixmap(dpi=200)  # dpi=300
                         #pixels = pixmap.tobytes() # output: jpg
