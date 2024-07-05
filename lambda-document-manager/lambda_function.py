@@ -802,14 +802,14 @@ def load_document(file_type, key):
                     print(f"imgInfo[{i}]: ', {imgInfo}")         
                     
                     width = height = 0
-                    for i, info in enumerate(imgInfo):
+                    for j, info in enumerate(imgInfo):
                         bbox = info['bbox']
-                        print(f"bbox[{i}]: {bbox}")
+                        print(f"page[{i}] -> bbox[{j}]: {bbox}")
                         if info['width']>width:
                             width = info['width']
                         if info['height']>height:
                             height = info['height']
-                        print(f"width[{i}]: {width}, height[{i}]: {height}")
+                        print(f"page[{i}] -> width[{j}]: {width}, height[{j}]: {height}")
                     
                     print(f"nImages[{i}]: {nImages[i]}")  # number of XObjects
                     if nImages[i] and \

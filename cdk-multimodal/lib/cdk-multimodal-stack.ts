@@ -613,6 +613,7 @@ export class CdkMultimodalStack extends cdk.Stack {
     // SQS for S3 event (fifo) 
     let queueUrl:string[] = [];
     let queue:any[] = [];
+    /*
     for(let i=0;i<LLM_embedding.length;i++) {
       queue[i] = new sqs.Queue(this, 'QueueS3EventFifo'+i, {
         visibilityTimeout: cdk.Duration.seconds(600),
@@ -623,7 +624,7 @@ export class CdkMultimodalStack extends cdk.Stack {
         retentionPeriod: cdk.Duration.days(2),
       });
       queueUrl.push(queue[i].queueUrl);
-    }
+    } */
 
     // Lambda for s3 event manager
     const lambdaS3eventManager = new lambda.Function(this, `lambda-s3-event-manager-for-${projectName}`, {
