@@ -773,9 +773,9 @@ def load_document(file_type, key):
                 #    print(f"Parent[{i}]: {page['/Parent']}")
                 if '/Resources' in page:                    
                     print(f"Resources[{i}]: {page['/Resources']}")
-                    if '/ProcSet' in page['/Resources':
+                    if '/ProcSet' in page['/Resources']:
                         print(f"Resources/ProcSet[{i}]: {page['/Resources']['/ProcSet']}")
-                    if '/XObject' in page['/Resources':
+                    if '/XObject' in page['/Resources']:
                         print(f"Resources/XObject[{i}]: {page['/Resources']['/XObject']}")
                 
                 texts.append(page.extract_text())
