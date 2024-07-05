@@ -611,7 +611,7 @@ export class CdkMultimodalStack extends cdk.Stack {
 
     // S3 - Lambda(S3 event) - SQS(fifo) - Lambda(document)
     // DLQ
-    let dlq:any[] = [];
+  /*  let dlq:any[] = [];
     for(let i=0;i<LLM_embedding.length;i++) {
       dlq[i] = new sqs.Queue(this, 'DlqS3EventFifo'+i, {
         visibilityTimeout: cdk.Duration.seconds(600),
@@ -640,7 +640,7 @@ export class CdkMultimodalStack extends cdk.Stack {
         }
       });
       queueUrl.push(queue[i].queueUrl);
-    }
+    } 
 
     // Lambda for s3 event manager
     const lambdaS3eventManager = new lambda.Function(this, `lambda-s3-event-manager-for-${projectName}`, {
@@ -658,7 +658,7 @@ export class CdkMultimodalStack extends cdk.Stack {
     for(let i=0;i<LLM_embedding.length;i++) {
       queue[i].grantSendMessages(lambdaS3eventManager); // permision for SQS putItem
     }
-
+*/
     // Lambda for document manager
     let lambdDocumentManager:any[] = [];
     for(let i=0;i<LLM_embedding.length;i++) {
@@ -677,7 +677,7 @@ export class CdkMultimodalStack extends cdk.Stack {
           opensearch_url: opensearch_url,
           roleArn: roleLambdaWebsocket.roleArn,
           path: 'https://'+distribution.domainName+'/', 
-          sqsUrl: queueUrl[i],
+        //  sqsUrl: queueUrl[i],
           max_object_size: String(max_object_size),
           supportedFormat: supportedFormat,
           LLM_for_chat: JSON.stringify(claude3_sonnet_for_workshop),
@@ -689,7 +689,7 @@ export class CdkMultimodalStack extends cdk.Stack {
         }
       });         
       s3Bucket.grantReadWrite(lambdDocumentManager[i]); // permission for s3
-      lambdDocumentManager[i].addEventSource(new SqsEventSource(queue[i])); // permission for SQS
+    //  lambdDocumentManager[i].addEventSource(new SqsEventSource(queue[i])); // permission for SQS
     }
     
     // s3 event source
@@ -703,7 +703,7 @@ export class CdkMultimodalStack extends cdk.Stack {
         { prefix: s3_prefix+'/' },
       ]
     });
-    lambdaS3eventManager.addEventSource(s3PutEventSource); 
+  //  lambdaS3eventManager.addEventSource(s3PutEventSource); 
 
     // lambda - provisioning
     const lambdaProvisioning = new lambda.Function(this, `lambda-provisioning-for-${projectName}`, {
