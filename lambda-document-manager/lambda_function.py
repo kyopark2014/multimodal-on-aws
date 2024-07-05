@@ -772,13 +772,13 @@ def load_document(file_type, key):
                     print('page: ', page)
                     
                     # save current pdf page to image 
-                    pixmap = page.get_pixmap(dpi=300, alpha=True)
-                    # img = pixmap.tobytes() # output: jpg
+                    pixmap = page.get_pixmap(dpi=300)
+                    #img = pixmap.tobytes() # output: jpg
                     
                     # convert to png
-                    # img = Image.frombytes("RGB", [pixmap.width, pixmap.height], pixmap.samples)
+                    img = Image.frombytes("RGB", [pixmap.width, pixmap.height], pixmap.samples)
                     pixels = BytesIO()
-                    pixmap.save(pixels, format='PNG')
+                    img.save(pixels, format='PNG')
                     pixels.seek(0, 0)
                                     
                     fname = key.split('/')[-1].split('.')[0]+f"_{i+1}"  
