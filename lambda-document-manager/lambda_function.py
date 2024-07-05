@@ -768,7 +768,7 @@ def load_document(file_type, key):
             if enablePageImageExraction=='true': 
                 pages = fitz.open(stream=Byte_contents, filetype='pdf')      
             
-                picture_count = 0
+                picture_count = 1
                 for i, page in enumerate(pages):
                     print('page: ', page)
                     
@@ -793,7 +793,7 @@ def load_document(file_type, key):
 
                     response = s3_client.put_object(
                         Bucket=s3_bucket,
-                        Key='capture/'+fname+'.png',
+                        Key=folder+fname+'.png',
                         ContentType='image/png',
                         Metadata = {
                             "ext": 'png',
