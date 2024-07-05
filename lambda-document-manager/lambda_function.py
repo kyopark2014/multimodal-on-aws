@@ -775,9 +775,9 @@ def load_document(file_type, key):
                     pixmap = page.get_pixmap(dpi=300, alpha=True)
                     img = pixmap.tobytes()
                     
-                    img = Image.frombytes("RGB", [img.width, img.height], img.samples)
                     pixels = BytesIO()
                     img.save(pixels, format='PNG')
+                    pixels.seek(0, 0)
                                     
                     fname = key.split('/')[-1].split('.')[0]+f"_{i+1}"  
 
@@ -787,7 +787,7 @@ def load_document(file_type, key):
                         ContentType='image/png',
                         Metadata = {
                             "ext": 'png',
-                            "page": str(i)
+                            "page": str(i+1)
                         },
                         Body=pixels
                     )
