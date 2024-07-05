@@ -624,7 +624,7 @@ export class CdkMultimodalStack extends cdk.Stack {
         retentionPeriod: cdk.Duration.days(2),
       });
       queueUrl.push(queue[i].queueUrl);
-    } */
+    } 
 
     // Lambda for s3 event manager
     const lambdaS3eventManager = new lambda.Function(this, `lambda-s3-event-manager-for-${projectName}`, {
@@ -641,7 +641,7 @@ export class CdkMultimodalStack extends cdk.Stack {
     });
     for(let i=0;i<LLM_embedding.length;i++) {
       queue[i].grantSendMessages(lambdaS3eventManager); // permision for SQS putItem
-    }
+    } */
 
     // Lambda for document manager
     let lambdDocumentManager:any[] = [];
@@ -687,7 +687,7 @@ export class CdkMultimodalStack extends cdk.Stack {
         { prefix: s3_prefix+'/' },
       ]
     });
-    lambdaS3eventManager.addEventSource(s3PutEventSource); 
+ //   lambdaS3eventManager.addEventSource(s3PutEventSource); 
 
     // lambda - provisioning
     const lambdaProvisioning = new lambda.Function(this, `lambda-provisioning-for-${projectName}`, {
