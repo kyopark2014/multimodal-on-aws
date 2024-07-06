@@ -909,6 +909,7 @@ def load_document(file_type, key):
             contents = '\n'.join(texts)            
             # print('contents: ', contents)
             
+            
             # Extract images
             if enableImageExtraction == 'true':
                 image_files = extract_images_from_docx(doc_contents, key)                
