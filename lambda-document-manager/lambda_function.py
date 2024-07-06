@@ -784,7 +784,14 @@ def load_document(file_type, key):
                         print(f"Resources/ProcSet[{i}]: {page['/Resources']['/ProcSet']}")
                     if '/XObject' in page['/Resources']:
                         print(f"Resources/XObject[{i}]: {page['/Resources']['/XObject']}")
-                        nImage = len(page['/Resources']['/XObject'])                
+                        nImage = len(page['/Resources']['/XObject'])        
+                        
+                        if '/Im1' in page['/Resources']['/XObject']:
+                            Im1 = page['/Resources']['/XObject']['Im1']
+                            print(f"Im1[{i}]: {Im1}")
+                        if '/Im2' in page['/Resources']['/XObject']:
+                            Im2 = page['/Resources']['/XObject']['Im2']
+                            print(f"Im2[{i}]: {Im2}")
                 print(f"# of images of page[{i}] = {nImage}")
                 nImages.append(nImage)
 
