@@ -789,12 +789,10 @@ def load_document(file_type, key):
                         for j, image in enumerate(page['/Resources']['/XObject']):
                             print(f"image[{j}]: {image}")     
                         
-                        if '/Im1' in page['/Resources']['/XObject']:
-                            Im1 = page['/Resources']['/XObject']['/Im1']
-                            print(f"Im1[{i}]: {Im1}")
-                        if '/Im2' in page['/Resources']['/XObject']:
-                            Im2 = page['/Resources']['/XObject']['/Im2']
-                            print(f"Im2[{i}]: {Im2}")
+                            Im = page['/Resources']['/XObject'][image]
+                            print(f"{image[1:]}[{j}]: {Im}")
+                            
+                            
                 print(f"# of images of page[{i}] = {nImage}")
                 nImages.append(nImage)
 
