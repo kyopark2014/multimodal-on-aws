@@ -784,7 +784,10 @@ def load_document(file_type, key):
                         print(f"Resources/ProcSet[{i}]: {page['/Resources']['/ProcSet']}")
                     if '/XObject' in page['/Resources']:
                         print(f"Resources/XObject[{i}]: {page['/Resources']['/XObject']}")
-                        nImage = len(page['/Resources']['/XObject'])        
+                        nImage = len(page['/Resources']['/XObject'])   
+                        
+                        for j, image in enumerate(page['/Resources']['/XObject']):
+                            print(f"image[{j}]: {image}")     
                         
                         if '/Im1' in page['/Resources']['/XObject']:
                             Im1 = page['/Resources']['/XObject']['/Im1']
@@ -805,7 +808,7 @@ def load_document(file_type, key):
                     print('page: ', page)
                     
                     imgInfo = page.get_image_info()
-                    print(f"imgInfo[{i}]: ', {imgInfo}")         
+                    print(f"imgInfo[{i}]: {imgInfo}")         
                     
                     width = height = 0
                     for j, info in enumerate(imgInfo):
