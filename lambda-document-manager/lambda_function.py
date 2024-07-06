@@ -787,10 +787,10 @@ def load_document(file_type, key):
                         nImage = len(page['/Resources']['/XObject'])        
                         
                         if '/Im1' in page['/Resources']['/XObject']:
-                            Im1 = page['/Resources']['/XObject']['Im1']
+                            Im1 = page['/Resources']['/XObject']['/Im1']
                             print(f"Im1[{i}]: {Im1}")
                         if '/Im2' in page['/Resources']['/XObject']:
-                            Im2 = page['/Resources']['/XObject']['Im2']
+                            Im2 = page['/Resources']['/XObject']['/Im2']
                             print(f"Im2[{i}]: {Im2}")
                 print(f"# of images of page[{i}] = {nImage}")
                 nImages.append(nImage)
