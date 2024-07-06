@@ -789,10 +789,14 @@ def load_document(file_type, key):
                             print(f"image[{j}]: {image}")                                 
                             if image in imgList:
                                 print('Duplicated...')
-                                continue                        
+                                continue    
+                            else:
+                                imgList.append(image)
+                                                    
                             Im = page['/Resources']['/XObject'][image]
                             print(f"{image}[{j}]: {Im}")                            
-                            nImage = nImage+1                            
+                            nImage = nImage+1
+                            
                 print(f"# of images of page[{i}] = {nImage}")
                 nImages.append(nImage)
 
