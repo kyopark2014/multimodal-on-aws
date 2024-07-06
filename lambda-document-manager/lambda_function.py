@@ -764,18 +764,18 @@ def load_document(file_type, key):
                 texts.append(page.extract_text())
                 
                 # annotation
-                #if '/Type' in page:
-                #    print(f"Type[{i}]: {page['/Type']}")                
-                #if '/Annots' in page:
-                #    print(f"Annots[{i}]: {page['/Annots']}")
-                #if '/Group' in page:
-                #    print(f"Group[{i}]: {page['/Group']}")
+                if '/Type' in page:
+                    print(f"Type[{i}]: {page['/Type']}")                
+                if '/Annots' in page:
+                    print(f"Annots[{i}]: {page['/Annots']}")
+                if '/Group' in page:
+                    print(f"Group[{i}]: {page['/Group']}")
                 if '/Contents' in page:                
                     print(f"Contents[{i}]: {page['/Contents']}")                    
-                #if '/MediaBox' in page:                
-                #    print(f"MediaBox[{i}]: {page['/MediaBox']}")                    
-                #if '/Parent' in page:
-                #    print(f"Parent[{i}]: {page['/Parent']}")
+                if '/MediaBox' in page:                
+                    print(f"MediaBox[{i}]: {page['/MediaBox']}")                    
+                if '/Parent' in page:
+                    print(f"Parent[{i}]: {page['/Parent']}")
                                 
                 nImage = 0
                 if '/Resources' in page:
