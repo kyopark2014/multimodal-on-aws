@@ -759,23 +759,24 @@ def load_document(file_type, key):
             print('pages: ', len(reader.pages))
             
             # extract text
+            imgList = []
             for i, page in enumerate(reader.pages):
                 print(f"page[{i}]: {page}")
                 texts.append(page.extract_text())
                 
                 # annotation
-                if '/Type' in page:
-                    print(f"Type[{i}]: {page['/Type']}")                
-                if '/Annots' in page:
-                    print(f"Annots[{i}]: {page['/Annots']}")
-                if '/Group' in page:
-                    print(f"Group[{i}]: {page['/Group']}")
+                #if '/Type' in page:
+                #    print(f"Type[{i}]: {page['/Type']}")                
+                #if '/Annots' in page:
+                #    print(f"Annots[{i}]: {page['/Annots']}")
+                #if '/Group' in page:
+                #    print(f"Group[{i}]: {page['/Group']}")
                 if '/Contents' in page:                
                     print(f"Contents[{i}]: {page['/Contents']}")                    
-                if '/MediaBox' in page:                
-                    print(f"MediaBox[{i}]: {page['/MediaBox']}")                    
-                if '/Parent' in page:
-                    print(f"Parent[{i}]: {page['/Parent']}")
+                #if '/MediaBox' in page:                
+                #    print(f"MediaBox[{i}]: {page['/MediaBox']}")                    
+                #if '/Parent' in page:
+                #    print(f"Parent[{i}]: {page['/Parent']}")
                                 
                 nImage = 0
                 if '/Resources' in page:
@@ -783,16 +784,15 @@ def load_document(file_type, key):
                     if '/ProcSet' in page['/Resources']:
                         print(f"Resources/ProcSet[{i}]: {page['/Resources']['/ProcSet']}")
                     if '/XObject' in page['/Resources']:
-                        print(f"Resources/XObject[{i}]: {page['/Resources']['/XObject']}")
-                        nImage = len(page['/Resources']['/XObject'])   
-                        
+                        print(f"Resources/XObject[{i}]: {page['/Resources']['/XObject']}")                        
                         for j, image in enumerate(page['/Resources']['/XObject']):
-                            print(f"image[{j}]: {image}")     
-                        
+                            print(f"image[{j}]: {image}")                                 
+                            if image in imgList:
+                                print('Duplicated...')
+                                continue                        
                             Im = page['/Resources']['/XObject'][image]
-                            print(f"{image[1:]}[{j}]: {Im}")
-                            
-                            
+                            print(f"{image}[{j}]: {Im}")                            
+                            nImage = nImage+1                            
                 print(f"# of images of page[{i}] = {nImage}")
                 nImages.append(nImage)
 
