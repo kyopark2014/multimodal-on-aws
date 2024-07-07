@@ -56,6 +56,7 @@ print('supportedFormat: ', supportedFormat)
 
 enableImageExtraction = 'true'
 enablePageImageExraction = 'true'
+maxOutputTokens = 4096
 
 os_client = OpenSearch(
     hosts = [{
@@ -111,7 +112,6 @@ def get_chat():
     bedrock_region =  profile['bedrock_region']
     modelId = profile['model_id']
     print(f'selected_chat: {selected_chat}, bedrock_region: {bedrock_region}, modelId: {modelId}')
-    maxOutputTokens = int(profile['maxOutputTokens'])
                           
     # bedrock   
     boto3_bedrock = boto3.client(
@@ -151,7 +151,6 @@ def get_multimodal():
     bedrock_region =  profile['bedrock_region']
     modelId = profile['model_id']
     print(f'selected_multimodal: {selected_multimodal}, bedrock_region: {bedrock_region}, modelId: {modelId}')
-    maxOutputTokens = int(profile['maxOutputTokens'])
                           
     # bedrock   
     boto3_bedrock = boto3.client(
@@ -980,7 +979,7 @@ def check_supported_type(key, file_type, size):
 
 HUMAN_PROMPT = "\n\nHuman:"
 AI_PROMPT = "\n\nAssistant:"
-def get_parameter(model_type, maxOutputTokens):
+def get_parameter(model_type):
     if model_type=='titan': 
         return {
             "maxTokenCount":1024,
