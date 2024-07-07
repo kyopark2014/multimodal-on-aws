@@ -54,7 +54,7 @@ max_object_size = int(os.environ.get('max_object_size'))
 supportedFormat = json.loads(os.environ.get('supportedFormat'))
 print('supportedFormat: ', supportedFormat)
 
-enableImageExtraction = 'false'
+enableImageExtraction = 'true'
 enablePageImageExraction = 'true'
 
 os_client = OpenSearch(
@@ -772,7 +772,7 @@ def load_document(file_type, key):
                 #if '/Group' in page:
                 #    print(f"Group[{i}]: {page['/Group']}")
                 if '/Contents' in page:                
-                    print(f"Contents[{i}]: {page['/Contents']}")                    
+                    print(f"Contents[{i}]: {page['/Contents']}")
                 #if '/MediaBox' in page:                
                 #    print(f"MediaBox[{i}]: {page['/MediaBox']}")                    
                 #if '/Parent' in page:
@@ -859,9 +859,8 @@ def load_document(file_type, key):
                         files.append(folder+fname+'.png')
                                     
                 contents = '\n'.join(texts)
-                
-            # extract image files   
-            if enableImageExtraction == 'true':
+
+            elif enableImageExtraction == 'true':
                 image_files = extract_images_from_pdf(reader, key)
                 for img in image_files:
                     files.append(img)
@@ -908,7 +907,6 @@ def load_document(file_type, key):
                     # print(f"{i}: {para.text}")        
             contents = '\n'.join(texts)            
             # print('contents: ', contents)
-            
             
             # Extract images
             if enableImageExtraction == 'true':
