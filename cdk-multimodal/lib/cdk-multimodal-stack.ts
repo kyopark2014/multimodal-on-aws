@@ -36,7 +36,7 @@ const supportedFormat = JSON.stringify(["pdf", "txt", "csv", "pptx", "ppt", "doc
 
 const max_object_size = 102400000; // 100 MB max size of an object, 50MB(default)
 const enableHybridSearch = 'true';
-const enableParallelSummay = 'true';
+const enableParallelSummary = 'true';
 const separated_chat_history = 'true';
 const enalbeParentDocumentRetrival = 'true';
 
@@ -682,7 +682,7 @@ export class CdkMultimodalStack extends cdk.Stack {
           LLM_for_chat: JSON.stringify(claude3_sonnet_for_workshop),
           LLM_for_multimodal:JSON.stringify(claude3_sonnet_for_workshop),
           LLM_embedding: JSON.stringify(titan_embedding_v2),
-          enableParallelSummay: enableParallelSummay,
+          enableParallelSummary: enableParallelSummary,
           enalbeParentDocumentRetrival: enalbeParentDocumentRetrival,
           enableHybridSearch: enableHybridSearch
         }
