@@ -1003,7 +1003,6 @@ def get_reference(docs):
         else:
             excerpt = str(doc['metadata']['excerpt']).replace('"'," ")
         
-        excerpt = excerpt.encode(encoding='UTF-8', errors='ignore')    
         excerpt = excerpt.replace('\n','\\n')            
                 
         if doc['rag_type'][:10] == 'opensearch':
