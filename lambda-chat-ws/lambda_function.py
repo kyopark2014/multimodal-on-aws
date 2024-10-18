@@ -1034,7 +1034,8 @@ def vector_search_using_parent_child_retrieval(vectorstore_opensearch, query, to
     result = vectorstore_opensearch.similarity_search_with_score(
         query = query,
         k = top_k*2,  
-        pre_filter={"doc_level": {"$eq": "child"}}
+        search_type="script_scoring",
+        pre_filter={"term": {"metadata.doc_level": "child"}}
     )
     print('result (opensearch): ', result)
             
@@ -1244,7 +1245,8 @@ def vector_search(bedrock_embedding, query, top_k):
         result = vectorstore_opensearch.similarity_search_with_score(
             query = query,
             k = top_k*2,  # use double
-            pre_filter={"doc_level": {"$eq": "child"}}
+            search_type="script_scoring",
+            pre_filter={"term": {"metadata.doc_level": "child"}}
         )
         print('result of opensearch: ', result)
                 
@@ -1663,7 +1665,8 @@ def search_by_opensearch(keyword: str) -> str:
         result = vectorstore_opensearch.similarity_search_with_score(
             query = keyword,
             k = top_k*2,  # use double
-            pre_filter={"doc_level": {"$eq": "child"}}
+            search_type="script_scoring",
+            pre_filter={"term": {"metadata.doc_level": "child"}}
         )
         print('result: ', result)
                 
