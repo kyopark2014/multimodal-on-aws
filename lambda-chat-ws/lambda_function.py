@@ -364,10 +364,10 @@ def general_conversation(connectionId, requestId, chat, query):
     human = "{input}"
     
     prompt = ChatPromptTemplate.from_messages([("system", system), MessagesPlaceholder(variable_name="history"), ("human", human)])
-    print('prompt: ', prompt)
+    #print('prompt: ', prompt)
     
     history = memory_chain.load_memory_variables({})["chat_history"]
-    print('memory_chain: ', history)
+    #print('memory_chain: ', history)
                 
     chain = prompt | chat    
     try: 
@@ -1879,7 +1879,7 @@ def lexical_search_for_tool(query, top_k):
         body=query,
         index="idx-*", # all
     )
-    print('lexical query result: ', json.dumps(response))
+    # print('lexical query result: ', json.dumps(response))
         
     answer = ""
     for i, document in enumerate(response['hits']['hits']):
