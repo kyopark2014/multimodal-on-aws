@@ -37,6 +37,11 @@ from pytz import timezone
 from langchain_community.tools.tavily_search import TavilySearchResults
 from opensearchpy import OpenSearch
 
+from langgraph.graph import START, END, StateGraph
+from langgraph.prebuilt import ToolNode
+from typing import Annotated, List, Tuple, TypedDict, Literal, Sequence, Union
+from langgraph.graph.message import add_messages
+
 s3 = boto3.client('s3')
 s3_bucket = os.environ.get('s3_bucket') # bucket name
 s3_prefix = os.environ.get('s3_prefix')
@@ -410,6 +415,130 @@ def general_conversation(connectionId, requestId, chat, query):
         time_for_inference = end_time_for_inference - start_time_for_inference
         
     return msg
+
+
+####################### LangGraph #######################
+# Chat Agent Executor
+#########################################################
+def update_state_message(msg:str, config):
+    print(msg)
+    # print('config: ', config)
+    
+    requestId = config.get("configurable", {}).get("requestId", "")
+    connectionId = config.get("configurable", {}).get("connectionId", "")
+    
+    isTyping(connectionId, requestId, msg)
+    
+def run_agent_executor(connectionId, requestId, query):
+    chatModel = get_chat() 
+
+    model = chatModel.bind_tools(tools)
+
+    class State(TypedDict):
+        # messages: Annotated[Sequence[BaseMessage], operator.add]
+        messages: Annotated[list, add_messages]
+
+    tool_node = ToolNode(tools)
+
+    def should_continue(state: State) -> Literal["continue", "end"]:
+        print("###### should_continue ######")
+        messages = state["messages"]    
+        print('last_message: ', messages[-1])
+        
+        last_message = messages[-1]
+        if not last_message.tool_calls:
+            return "end"
+        else:                
+            return "continue"
+
+    def call_model(state: State, config):
+        print("###### call_model ######")
+        # print('state: ', state["messages"])
+        
+        update_state_message("thinking...", config)
+        
+        if isKorean(state["messages"][0].content)==True:
+            system = (
+                "당신의 이름은 서연이고, 질문에 친근한 방식으로 대답하도록 설계된 대화형 AI입니다."
+                "상황에 맞는 구체적인 세부 정보를 충분히 제공합니다."
+                "모르는 질문을 받으면 솔직히 모른다고 말합니다."
+                "최종 답변에는 조사한 내용을 반드시 포함합니다."
+                # "최종 답변에는 조사한 내용을 반드시 포함하여야 하고, <result> tag를 붙여주세요." 
+            )
+        else: 
+            system = (            
+                "You are a conversational AI designed to answer in a friendly way to a question."
+                "If you don't know the answer, just say that you don't know, don't try to make up an answer."
+                "You will be acting as a thoughtful advisor."    
+                #"Put it in <result> tags."
+                # "Answer friendly for the newest question using the following conversation"
+                #"You should always answer in jokes."
+                #"You should always answer in rhymes."            
+            )
+            
+        prompt = ChatPromptTemplate.from_messages(
+            [
+                ("system", system),
+                MessagesPlaceholder(variable_name="messages"),
+            ]
+        )
+        chain = prompt | model
+            
+        response = chain.invoke(state["messages"])
+        print('call_model response: ', response.tool_calls)
+        
+        # state messag
+        if response.tool_calls:
+            toolinfo = response.tool_calls[-1]            
+            if toolinfo['type'] == 'tool_call':
+                print('tool name: ', toolinfo['name'])                    
+                update_state_message(f"calling... {toolinfo['name']}", config)
+        
+        return {"messages": [response]}
+
+    def buildChatAgent():
+        workflow = StateGraph(State)
+
+        workflow.add_node("agent", call_model)
+        workflow.add_node("action", tool_node)
+        workflow.add_edge(START, "agent")
+        workflow.add_conditional_edges(
+            "agent",
+            should_continue,
+            {
+                "continue": "action",
+                "end": END,
+            },
+        )
+        workflow.add_edge("action", "agent")
+
+        return workflow.compile()
+
+    app = buildChatAgent()
+        
+    isTyping(connectionId, requestId, "")
+    
+    inputs = [HumanMessage(content=query)]
+    config = {
+        "recursion_limit": 50,
+        "requestId": requestId,
+        "connectionId": connectionId
+    }
+    
+    message = ""
+    for event in app.stream({"messages": inputs}, config, stream_mode="values"):   
+        # print('event: ', event)
+        
+        message = event["messages"][-1]
+        # print('message: ', message)
+
+    msg = readStreamMsg(connectionId, requestId, message.content)
+
+    #return msg[msg.find('<result>')+8:len(msg)-9]
+    return msg
+
+#########################################################
+
     
 def translate_text(chat, text):
     global time_for_inference
@@ -2038,13 +2167,23 @@ def getResponse(connectionId, jsonBody):
             else:       
                 if conv_type == 'normal':      # normal
                     msg = general_conversation(connectionId, requestId, chat, text)      
-                elif conv_type == 'agent-react':
-                    msg = run_agent_react(connectionId, requestId, chat, text)                
-                elif conv_type == 'agent-react-chat':         
-                    if separated_chat_history=='true': 
-                        msg = run_agent_react_chat_using_revised_question(connectionId, requestId, chat, text)
-                    else:
-                        msg = run_agent_react_chat(connectionId, requestId, chat, text)
+                    
+                
+                #elif conv_type == 'agent-react':
+                #    msg = run_agent_react(connectionId, requestId, chat, text)                
+                #elif conv_type == 'agent-react-chat':         
+                #    if separated_chat_history=='true': 
+                #        msg = run_agent_react_chat_using_revised_question(connectionId, requestId, chat, text)
+                #    else:
+                #        msg = run_agent_react_chat(connectionId, requestId, chat, text)
+                
+                elif conv_type == 'agent-executor':
+                    msg = run_agent_executor(connectionId, requestId, text)
+                
+                elif conv_type == 'agent-executor-chat':
+                    revised_question = revise_question(connectionId, requestId, chat, text)     
+                    print('revised_question: ', revised_question)  
+                    msg = run_agent_executor(connectionId, requestId, revised_question)
                                         
                 elif conv_type == 'qa-opensearch-vector':   # RAG - Vector
                     print(f'rag_type: {rag_type}')
