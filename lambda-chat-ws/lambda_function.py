@@ -59,7 +59,7 @@ LLM_for_chat = json.loads(os.environ.get('LLM_for_chat'))
 LLM_for_multimodal= json.loads(os.environ.get('LLM_for_multimodal'))
 LLM_embedding = json.loads(os.environ.get('LLM_embedding'))
 priorty_search_embedding = json.loads(os.environ.get('priorty_search_embedding'))
-enalbeParentDocumentRetrival = os.environ.get('enalbeParentDocumentRetrival')
+enableParentDocumentRetrival = os.environ.get('enableParentDocumentRetrival')
 enableHybridSearch = os.environ.get('enableHybridSearch')
 
 selected_chat = 0
@@ -81,6 +81,7 @@ token_counter_history = 0
 minDocSimilarity = 200
 projectName = os.environ.get('projectName')
 maxOutputTokens = 4096
+reference_docs = []
 
 # google search api
 googleApiSecret = os.environ.get('googleApiSecret')
@@ -1303,7 +1304,7 @@ def lexical_search(query, top_k):
             assessed_score = ""
             
             parent_doc_id = doc_level = ""
-            if enalbeParentDocumentRetrival == 'true':
+            if enableParentDocumentRetrival == 'true':
                 if 'parent_doc_id' in document['_source']['metadata']:
                     parent_doc_id = document['_source']['metadata']['parent_doc_id']
                 if 'doc_level' in document['_source']['metadata']:
@@ -1371,7 +1372,7 @@ def vector_search(bedrock_embedding, query, top_k):
     relevant_docs = []
             
     # vector search (semantic) 
-    if enalbeParentDocumentRetrival=='true':  # parent/child chunking
+    if enableParentDocumentRetrival=='true':  # parent/child chunking
         result = vectorstore_opensearch.similarity_search_with_score(
             query = query,
             k = top_k*2,  # use double
@@ -1425,7 +1426,7 @@ def vector_search(bedrock_embedding, query, top_k):
         assessed_score = str(document[1])
         
         parent_doc_id = doc_level = ""            
-        if enalbeParentDocumentRetrival == 'true':
+        if enableParentDocumentRetrival == 'true':
             parent_doc_id = document[0].metadata['parent_doc_id']
             doc_level = document[0].metadata['doc_level']
 
@@ -1761,7 +1762,46 @@ def search_by_tavily(keyword: str) -> str:
         
     return answer
 
-@tool    
+def get_documents_from_opensearch(vectorstore_opensearch, query, top_k):
+    print("###### get_documents_from_opensearch ######")
+    
+    result = vectorstore_opensearch.similarity_search_with_score(
+        query = query,
+        k = top_k*2,  
+        search_type="script_scoring",
+        pre_filter={"term": {"metadata.doc_level": "child"}}
+    )
+    print('result: ', result)
+            
+    relevant_documents = []
+    docList = []
+    for re in result:
+        if 'parent_doc_id' in re[0].metadata:
+            parent_doc_id = re[0].metadata['parent_doc_id']
+            doc_level = re[0].metadata['doc_level']
+            print(f"doc_level: {doc_level}, parent_doc_id: {parent_doc_id}")
+                    
+            if doc_level == 'child':
+                if parent_doc_id in docList:
+                    print('duplicated!')
+                else:
+                    relevant_documents.append(re)
+                    docList.append(parent_doc_id)
+                    
+                    if len(relevant_documents)>=top_k:
+                        break
+                                
+    # print('relevant_documents: ', relevant_documents)    
+    for i, doc in enumerate(relevant_documents):
+        if len(doc[0].page_content)>=100:
+            text = doc[0].page_content[:100]
+        else:
+            text = doc[0].page_content            
+        print(f"--> vector search doc[{i}]: {text}, metadata:{doc[0].metadata}")
+    
+    return relevant_documents
+
+@tool  
 def search_by_opensearch(keyword: str) -> str:
     """
     Search technical information by keyword and then return the result as a string.
@@ -1787,49 +1827,33 @@ def search_by_opensearch(keyword: str) -> str:
         opensearch_url=opensearch_url,
         http_auth=(opensearch_account, opensearch_passwd), # http_auth=awsauth,
     ) 
-    
-    answer = ""
     top_k = 2
     
-    if enalbeParentDocumentRetrival == 'true': # parent/child chunking
-        result = vectorstore_opensearch.similarity_search_with_score(
-            query = keyword,
-            k = top_k*2,  # use double
-            search_type="script_scoring",
-            pre_filter={"term": {"metadata.doc_level": "child"}}
-        )
-        print('result: ', result)
-                
-        relevant_documents = []
-        docList = []
-        for re in result:
-            if 'parent_doc_id' in re[0].metadata:
-                parent_doc_id = re[0].metadata['parent_doc_id']
-                doc_level = re[0].metadata['doc_level']
-                print(f"doc_level: {doc_level}, parent_doc_id: {parent_doc_id}")
-                        
-                if doc_level == 'child':
-                    if parent_doc_id in docList:
-                        print('duplicated!')
-                    else:
-                        relevant_documents.append(re)
-                        docList.append(parent_doc_id)
-                        
-                        if len(relevant_documents)>=top_k:
-                            break
+    relevant_docs = [] 
+    if enableParentDocumentRetrival == 'true': # parent/child chunking
+        relevant_documents = get_documents_from_opensearch(vectorstore_opensearch, keyword, top_k)
                         
         for i, document in enumerate(relevant_documents):
             #print(f'## Document(opensearch-vector) {i+1}: {document}')
             
             parent_doc_id = document[0].metadata['parent_doc_id']
             doc_level = document[0].metadata['doc_level']
-            print(f"child: parent_doc_id: {parent_doc_id}, doc_level: {doc_level}")
+            #print(f"child: parent_doc_id: {parent_doc_id}, doc_level: {doc_level}")
             
-            excerpt, uri = get_parent_content(parent_doc_id)
+            excerpt, name, url = get_parent_content(parent_doc_id) # use pareant document
+            #print(f"parent_doc_id: {parent_doc_id}, doc_level: {doc_level}, url: {url}, content: {excerpt}")
             
-            print(f"parent_doc_id: {parent_doc_id}, doc_level: {doc_level}, uri: {uri}, content: {excerpt}")
-            
-            answer = answer + f"{excerpt}, URL: {uri}\n\n"
+            relevant_docs.append(
+                Document(
+                    page_content=excerpt,
+                    metadata={
+                        'name': name,
+                        'url': url,
+                        'doc_level': doc_level,
+                        'from': 'vector'
+                    },
+                )
+            )
     else: 
         relevant_documents = vectorstore_opensearch.similarity_search_with_score(
             query = keyword,
@@ -1839,17 +1863,38 @@ def search_by_opensearch(keyword: str) -> str:
         for i, document in enumerate(relevant_documents):
             #print(f'## Document(opensearch-vector) {i+1}: {document}')
             
-            excerpt = document[0].page_content        
-            uri = document[0].metadata['uri']
-                            
-            answer = answer + f"{excerpt}, URL: {uri}\n\n"
+            excerpt = document[0].page_content
+            
+            url = ""
+            if "url" in document[0].metadata:
+                url = document[0].metadata['url']
+                
+            name = document[0].metadata['name']
+            
+            relevant_docs.append(
+                Document(
+                    page_content=excerpt,
+                    metadata={
+                        'name': name,
+                        'url': url,
+                        'from': 'vector'
+                    },
+                )
+            )
     
     if enableHybridSearch == 'true':
-        answer = answer + lexical_search_for_tool(keyword, top_k)
-        
-    print('opensearch: ', answer)
+        relevant_docs += lexical_search(keyword, top_k)
     
-    return answer
+    print('relevant_docs length: ', len(relevant_docs))
+                       
+    relevant_contexts = "" 
+    for doc in relevant_docs:
+        content = doc.page_content
+        
+        relevant_contexts += f"{content}\n\n"
+        
+    return relevant_contexts
+
 
 def lexical_search_for_tool(query, top_k):
     # lexical search (keyword)
@@ -2069,6 +2114,10 @@ def getResponse(connectionId, jsonBody):
     conv_type = jsonBody['conv_type']  # conversation type
     print('Conversation Type: ', conv_type)
     
+    print('initiate....')
+    global reference_docs
+    reference_docs = []
+    
     rag_type = ""
     if 'rag_type' in jsonBody:
         if jsonBody['rag_type']:
@@ -2212,6 +2261,9 @@ def getResponse(connectionId, jsonBody):
                     
                 memory_chain.chat_memory.add_user_message(text)
                 memory_chain.chat_memory.add_ai_message(msg)
+                
+                if reference_docs:
+                    reference = get_references(reference_docs)
                         
         elif type == 'document':
             isTyping(connectionId, requestId,"")

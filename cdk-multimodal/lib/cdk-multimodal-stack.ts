@@ -38,7 +38,7 @@ const max_object_size = 102400000; // 100 MB max size of an object, 50MB(default
 const enableHybridSearch = 'true';
 const enableParallelSummary = 'true';
 const separated_chat_history = 'true';
-const enalbeParentDocumentRetrival = 'true';
+const enableParentDocumentRetrival = 'true';
 
 const LLM_for_chat = [
   {
@@ -551,7 +551,7 @@ export class CdkMultimodalStack extends cdk.Stack {
         googleApiSecret: googleApiSecret.secretName,
         projectName: projectName,
         separated_chat_history: separated_chat_history,
-        enalbeParentDocumentRetrival: enalbeParentDocumentRetrival,
+        enableParentDocumentRetrival: enableParentDocumentRetrival,
         enableHybridSearch: enableHybridSearch,
       }
     });     
@@ -683,7 +683,7 @@ export class CdkMultimodalStack extends cdk.Stack {
           LLM_for_multimodal:JSON.stringify(LLM_for_chat),
           LLM_embedding: JSON.stringify(titan_embedding_v2),
           enableParallelSummary: enableParallelSummary,
-          enalbeParentDocumentRetrival: enalbeParentDocumentRetrival,
+          enableParentDocumentRetrival: enableParentDocumentRetrival,
           enableHybridSearch: enableHybridSearch
         }
       });         
