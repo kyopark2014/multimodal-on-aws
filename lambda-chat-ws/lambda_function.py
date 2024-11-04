@@ -485,7 +485,7 @@ def run_agent_executor(connectionId, requestId, query):
         chain = prompt | model
             
         response = chain.invoke(state["messages"])
-        print('call_model response: ', response.tool_calls)
+        print('call_model response: ', response)
         
         # state messag
         if response.tool_calls:
