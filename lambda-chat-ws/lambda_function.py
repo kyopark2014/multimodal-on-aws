@@ -1892,9 +1892,11 @@ def search_by_opensearch(keyword: str) -> str:
         content = doc.page_content
         
         relevant_contexts += f"{content}\n\n"
+    
+    global reference_docs
+    reference_docs += relevant_docs
         
     return relevant_contexts
-
 
 def lexical_search_for_tool(query, top_k):
     # lexical search (keyword)
@@ -2099,6 +2101,51 @@ def run_agent_react_chat(connectionId, requestId, chat, query):
     print('msg: ', msg)
             
     return msg
+
+def get_references(docs):
+    reference = "\n\nFrom\n"
+    for i, doc in enumerate(docs):
+        page = ""
+        if "page" in doc.metadata:
+            page = doc.metadata['page']
+            #print('page: ', page)            
+        url = ""
+        if "url" in doc.metadata:
+            url = doc.metadata['url']
+            #print('url: ', url)                
+        name = ""
+        if "name" in doc.metadata:
+            name = doc.metadata['name']
+            #print('name: ', name)     
+           
+        sourceType = ""
+        if "from" in doc.metadata:
+            sourceType = doc.metadata['from']
+        else:
+            if useEnhancedSearch:
+                sourceType = "OpenSearch"
+            else:
+                sourceType = "WWW"
+        #print('sourceType: ', sourceType)        
+        
+        #if len(doc.page_content)>=1000:
+        #    excerpt = ""+doc.page_content[:1000]
+        #else:
+        #    excerpt = ""+doc.page_content
+        excerpt = ""+doc.page_content
+        # print('excerpt: ', excerpt)
+        
+        # for some of unusual case 
+        #excerpt = excerpt.replace('"', '')        
+        #excerpt = ''.join(c for c in excerpt if c not in '"')
+        excerpt = re.sub('"', '', excerpt)
+        # print('excerpt(quotation removed): ', excerpt)
+        
+        if page:                
+            reference = reference + f"{i+1}. {page}page in <a href={url} target=_blank>{name}</a>, {sourceType}, <a href=\"#\" onClick=\"alert(`{excerpt}`)\">관련문서</a>\n"
+        else:
+            reference = reference + f"{i+1}. <a href={url} target=_blank>{name}</a>, {sourceType}, <a href=\"#\" onClick=\"alert(`{excerpt}`)\">관련문서</a>\n"
+    return reference
     
 def getResponse(connectionId, jsonBody):
     userId  = jsonBody['user_id']
