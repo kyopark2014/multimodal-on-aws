@@ -40,11 +40,11 @@ const enableParallelSummary = 'true';
 const separated_chat_history = 'true';
 const enalbeParentDocumentRetrival = 'true';
 
-const claude3_sonnet_for_workshop = [
+const LLM_for_chat = [
   {
     "bedrock_region": "us-west-2", // Oregon
     "model_type": "claude3.5",
-    "model_id": "anthropic.claude-3-5-sonnet-20240620-v1:0"
+    "model_id": "anthropic.claude-3-5-haiku-20241022-v1:0"
   }
 ];
 
@@ -544,7 +544,7 @@ export class CdkMultimodalStack extends cdk.Stack {
         debugMessageMode: debugMessageMode,
         useParallelRAG: useParallelRAG,
         numberOfRelevantDocs: numberOfRelevantDocs,
-        LLM_for_chat: JSON.stringify(claude3_sonnet_for_workshop),
+        LLM_for_chat: JSON.stringify(LLM_for_chat),
         LLM_for_multimodal:JSON.stringify(claude3_sonnet_for_workshop),
         LLM_embedding: JSON.stringify(titan_embedding_v2),
         priorty_search_embedding: JSON.stringify(titan_embedding_v1),
