@@ -516,7 +516,7 @@ def run_agent_executor(connectionId, requestId, query):
 
     app = buildChatAgent()
         
-    isTyping(connectionId, requestId, "")
+    isTyping(connectionId, requestId, "thinking...")
     
     inputs = [HumanMessage(content=query)]
     config = {
