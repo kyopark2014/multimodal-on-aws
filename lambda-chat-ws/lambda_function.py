@@ -371,7 +371,7 @@ def general_conversation(connectionId, requestId, chat, query):
                 
     chain = prompt | chat    
     try: 
-        isTyping(connectionId, requestId)  
+        isTyping(connectionId, requestId,"")  
         stream = chain.invoke(
             {
                 "history": history,
@@ -686,7 +686,7 @@ def generate_code(connectionId, requestId, chat, text, context, mode):
     
     chain = prompt | chat    
     try: 
-        isTyping(connectionId, requestId)  
+        isTyping(connectionId, requestId,"")  
         stream = chain.invoke(
             {
                 "context": context,
@@ -838,7 +838,7 @@ def query_using_RAG_context(connectionId, requestId, chat, context, revised_ques
     chain = prompt | chat
     
     try: 
-        isTyping(connectionId, requestId)  
+        isTyping(connectionId, requestId,"")  
         stream = chain.invoke(
             {
                 "context": context,
@@ -1048,10 +1048,12 @@ def getAllowTime():
 
     return timeStr
 
-def isTyping(connectionId, requestId):    
+def isTyping(connectionId, requestId, msg):    
+    if not msg:
+        msg = "typing a message..."
     msg_proceeding = {
         'request_id': requestId,
-        'msg': 'Proceeding...',
+        'msg': msg,
         'status': 'istyping'
     }
     #print('result: ', json.dumps(result))
@@ -1938,7 +1940,7 @@ def run_agent_react(connectionId, requestId, chat, query):
     #print('prompt_template: ', prompt_template)
     
      # create agent
-    isTyping(connectionId, requestId)
+    isTyping(connectionId, requestId, "")
     agent = create_react_agent(chat, tools, prompt_template)
     
     agent_executor = AgentExecutor(
@@ -1971,7 +1973,7 @@ def run_agent_react_chat_using_revised_question(connectionId, requestId, chat, q
     print('prompt_template: ', prompt_template)
     
     # create agent
-    isTyping(connectionId, requestId)
+    isTyping(connectionId, requestId,"")
     agent = create_react_agent(chat, tools, prompt_template)
     
     agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True, handle_parsing_errors=True)
@@ -2029,7 +2031,7 @@ def run_agent_react_chat(connectionId, requestId, chat, query):
     print('prompt_template: ', prompt_template)
     
     # create agent
-    isTyping(connectionId, requestId)
+    isTyping(connectionId, requestId,"")
     agent = create_react_agent(chat, tools, prompt_template)
     
     agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True, handle_parsing_errors=True)
@@ -2211,7 +2213,7 @@ def getResponse(connectionId, jsonBody):
                 memory_chain.chat_memory.add_ai_message(msg)
                         
         elif type == 'document':
-            isTyping(connectionId, requestId)
+            isTyping(connectionId, requestId,"")
             
             object = body
             file_type = object[object.rfind('.')+1:len(object)]            
