@@ -24,7 +24,7 @@ LLM (Large Language Models)을 이용한 어플리케이션을 개발할 때에 
 
 ### LangChain의 ChatBedrock
 
-Claude3부터는 ChatBedrock을 이용하여야 합니다. 이때, [LangChain ChatBedrock](https://python.langchain.com/docs/integrations/chat/bedrock/)의 max_tokens_to_sample이 ChatBedrock에서는 max_tokens로 변경되었습니다. 상세한 코드는 [lambda-chat-ws](./lambda-chat-ws/lambda_function.py)을 참조합니다. 
+아래와 같이 ChatBedrock을 설정합니다. 상세한 코드는 [lambda-chat-ws](./lambda-chat-ws/lambda_function.py)을 참조합니다. 
 
 ```python
 import boto3
