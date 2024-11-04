@@ -1188,8 +1188,7 @@ def vector_search_using_parent_child_retrieval(vectorstore_opensearch, query, to
                     if len(relevant_documents)>=top_k:
                         break
                                 
-    # print('lexical query result: ', json.dumps(response))
-    print('relevant_documents: ', relevant_documents)
+    #print('relevant_documents: ', relevant_documents)
     
     return relevant_documents
 
@@ -1847,6 +1846,8 @@ def search_by_opensearch(keyword: str) -> str:
     
     if enableHybridSearch == 'true':
         answer = answer + lexical_search_for_tool(keyword, top_k)
+        
+    print('opensearch: ', answer)
     
     return answer
 
