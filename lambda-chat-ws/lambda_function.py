@@ -1279,7 +1279,7 @@ def lexical_search(query, top_k):
         body=query,
         index="idx-*" # all
     )
-    print('lexical query result: ', json.dumps(response))
+    # print('lexical query result: ', json.dumps(response))
         
     docs = []
     for i, document in enumerate(response['hits']['hits']):
