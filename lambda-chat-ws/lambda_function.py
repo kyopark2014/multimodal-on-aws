@@ -1276,7 +1276,7 @@ def lexical_search(query, top_k):
         body=query,
         index="idx-*" # all
     )
-    # print('lexical query result: ', json.dumps(response))
+    print('lexical query result: ', json.dumps(response))
         
     docs = []
     for i, document in enumerate(response['hits']['hits']):
@@ -1742,7 +1742,7 @@ def get_documents_from_opensearch(vectorstore_opensearch, query, top_k):
         search_type="script_scoring",
         pre_filter={"term": {"metadata.doc_level": "child"}}
     )
-    print('result: ', result)
+    print('result from opensearch: ', result)
             
     relevant_documents = []
     docList = []
@@ -1855,10 +1855,12 @@ def search_by_opensearch(keyword: str) -> str:
                 )
             )
     
+    print('the length of relevant_docs (vector): ', len(relevant_docs))
+    
     if enableHybridSearch == 'true':
         relevant_docs += lexical_search(keyword, top_k)
     
-    print('relevant_docs length: ', len(relevant_docs))
+    print('the length of relevant_docs (vector+lexical): ', len(relevant_docs))
                        
     relevant_contexts = "" 
     for doc in relevant_docs:
