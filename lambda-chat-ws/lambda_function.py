@@ -1207,21 +1207,24 @@ os_client = OpenSearch(
 )
 
 def get_parent_content(parent_doc_id):
-    if parent_doc_id:
-        response = os_client.get(
-            index="idx-rag", 
-            id = parent_doc_id
-        )
-            
-        source = response['_source']
-        print('excerpt: ', source['text'])   
-            
-        metadata = source['metadata']    
-        #print('name: ', metadata['name'])   
-        print('uri: ', metadata['uri'])   
-        #print('doc_level: ', metadata['doc_level']) 
-                    
-    return source['text'], metadata['uri']
+    response = os_client.get(
+        index="idx-rag", 
+        id = parent_doc_id
+    )
+    
+    source = response['_source']                            
+    # print('parent_doc: ', source['text'])   
+    
+    metadata = source['metadata']    
+    #print('name: ', metadata['name'])   
+    #print('url: ', metadata['url'])   
+    #print('doc_level: ', metadata['doc_level']) 
+    
+    uri = ""
+    if "uri" in metadata:
+        uri = metadata['uri']
+    
+    return source['text'], metadata['name'], uri
 
 def get_parent_document(doc):
     # print('doc: ', doc)
@@ -1813,7 +1816,7 @@ def search_by_opensearch(keyword: str) -> str:
             doc_level = document[0].metadata['doc_level']
             #print(f"child: parent_doc_id: {parent_doc_id}, doc_level: {doc_level}")
             
-            excerpt, name, url = get_parent_content(parent_doc_id) # use pareant document
+            excerpt, name, uri = get_parent_content(parent_doc_id) # use pareant document
             #print(f"parent_doc_id: {parent_doc_id}, doc_level: {doc_level}, url: {url}, content: {excerpt}")
             
             relevant_docs.append(
@@ -1821,7 +1824,7 @@ def search_by_opensearch(keyword: str) -> str:
                     page_content=excerpt,
                     metadata={
                         'name': name,
-                        'url': url,
+                        'url': uri,
                         'doc_level': doc_level,
                         'from': 'vector'
                     },
@@ -1838,9 +1841,9 @@ def search_by_opensearch(keyword: str) -> str:
             
             excerpt = document[0].page_content
             
-            url = ""
-            if "url" in document[0].metadata:
-                url = document[0].metadata['url']
+            uri = ""
+            if "uri" in document[0].metadata:
+                uri = document[0].metadata['uri']
                 
             name = document[0].metadata['name']
             
@@ -1849,7 +1852,7 @@ def search_by_opensearch(keyword: str) -> str:
                     page_content=excerpt,
                     metadata={
                         'name': name,
-                        'url': url,
+                        'url': uri,
                         'from': 'vector'
                     },
                 )
