@@ -48,12 +48,11 @@ const claude3_sonnet = [
   }
 ];
 
-
 const claude3_5_haiku = [
   {
     "bedrock_region": "us-west-2", // Oregon
     "model_type": "claude3.5",
-    "model_id": "anthropic.claude-3-5-haiku-20241022-v1:0"
+    "model_id": "us.anthropic.claude-3-5-haiku-20241022-v1:0"
   }
 ];
 

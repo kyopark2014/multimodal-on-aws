@@ -2321,7 +2321,8 @@ def getResponse(connectionId, jsonBody):
                 print('command: ', command)
                 
                 # verify the image
-                msg = use_multimodal(chat, img_base64, command)       
+                model = get_multimodal()
+                msg = use_multimodal(model, img_base64, command)       
                 
                 # extract text from the image
                 text = extract_text(chat, img_base64)
