@@ -40,7 +40,16 @@ const enableParallelSummary = 'true';
 const separated_chat_history = 'true';
 const enableParentDocumentRetrival = 'true';
 
-const LLM_for_chat = [
+const claude3_sonnet = [
+  {
+    "bedrock_region": "us-west-2", // Oregon
+    "model_type": "claude3.0",
+    "model_id": "anthropic.claude-3-5-sonnet-20240620-v1:0"
+  }
+];
+
+
+const claude3_5_haiku = [
   {
     "bedrock_region": "us-west-2", // Oregon
     "model_type": "claude3.5",
@@ -65,6 +74,8 @@ const titan_embedding_v2 = [
 ];
 
 const LLM_embedding = titan_embedding_v2;
+const LLM_for_chat = claude3_5_haiku;
+const LLM_for_multimodal = claude3_sonnet;
 
 export class CdkMultimodalStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -545,7 +556,7 @@ export class CdkMultimodalStack extends cdk.Stack {
         useParallelRAG: useParallelRAG,
         numberOfRelevantDocs: numberOfRelevantDocs,
         LLM_for_chat: JSON.stringify(LLM_for_chat),
-        LLM_for_multimodal:JSON.stringify(LLM_for_chat),
+        LLM_for_multimodal:JSON.stringify(LLM_for_multimodal),
         LLM_embedding: JSON.stringify(titan_embedding_v2),
         priorty_search_embedding: JSON.stringify(titan_embedding_v1),
         googleApiSecret: googleApiSecret.secretName,
@@ -680,7 +691,7 @@ export class CdkMultimodalStack extends cdk.Stack {
           max_object_size: String(max_object_size),
           supportedFormat: supportedFormat,
           LLM_for_chat: JSON.stringify(LLM_for_chat),
-          LLM_for_multimodal:JSON.stringify(LLM_for_chat),
+          LLM_for_multimodal:JSON.stringify(LLM_for_multimodal),
           LLM_embedding: JSON.stringify(titan_embedding_v2),
           enableParallelSummary: enableParallelSummary,
           enableParentDocumentRetrival: enableParentDocumentRetrival,
