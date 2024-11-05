@@ -1611,6 +1611,8 @@ def get_book_list(keyword: str) -> str:
     return: book list
     """
     
+    print('###### tool: get_book_list ######')
+    
     keyword = keyword.replace('\'','')
 
     answer = ""
@@ -1652,6 +1654,8 @@ def get_weather_info(city: str) -> str:
     city: the english name of city to search
     return: weather statement
     """    
+    
+    print('###### tool: get_weather_info ######')
     
     city = city.replace('\n','')
     city = city.replace('\'','')
@@ -1707,6 +1711,8 @@ def search_by_tavily(keyword: str) -> str:
     keyword: search keyword
     return: the information of keyword
     """    
+    
+    print('###### tool: search_by_tavily ######')
     
     answer = ""    
     if tavily_api_key:
@@ -1773,6 +1779,8 @@ def search_by_opensearch(keyword: str) -> str:
     keyword: search keyword
     return: the technical information of keyword
     """    
+    
+    print('###### tool: search_by_opensearch ######')
     
     print('keyword: ', keyword)
     keyword = keyword.replace('\'','')
