@@ -2325,7 +2325,7 @@ def getResponse(connectionId, jsonBody):
                 msg = use_multimodal(model, img_base64, command)       
                 
                 # extract text from the image
-                text = extract_text(chat, img_base64)
+                text = extract_text(model, img_base64)
                 extracted_text = text[text.find('<result>')+8:len(text)-9] # remove <result> tag
                 print('extracted_text: ', extracted_text)
                 if len(extracted_text)>10:
