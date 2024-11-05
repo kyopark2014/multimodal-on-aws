@@ -1249,111 +1249,76 @@ def get_parent_document(doc):
     return doc
 
 def lexical_search(query, top_k):
-    relevant_docs = []
-    
     # lexical search (keyword)
     min_match = 0
-    if enableHybridSearch == 'true':
-        query = {
-            "query": {
-                "bool": {
-                    "must": [
-                        {
-                            "match": {
-                                "text": {
-                                    "query": query,
-                                    "minimum_should_match": f'{min_match}%',
-                                    "operator":  "or",
-                                }
+    
+    query = {
+        "query": {
+            "bool": {
+                "must": [
+                    {
+                        "match": {
+                            "text": {
+                                "query": query,
+                                "minimum_should_match": f'{min_match}%',
+                                "operator":  "or",
                             }
-                        },
-                    ],
-                    "filter": [
-                    ]
-                }
+                        }
+                    },
+                ],
+                "filter": [
+                ]
             }
         }
+    }
 
-        response = os_client.search(
-            body=query,
-            index="idx-*", # all
-        )
-        # print('lexical query result: ', json.dumps(response))
+    response = os_client.search(
+        body=query,
+        index="idx-*" # all
+    )
+    # print('lexical query result: ', json.dumps(response))
         
-        docList = []   
-        for i, document in enumerate(response['hits']['hits']):
-            if i>=top_k: 
-                break
+    docs = []
+    for i, document in enumerate(response['hits']['hits']):
+        if i>=top_k: 
+            break
                     
-            excerpt = document['_source']['text']
-            #print(f'## Document(opensearch-keyword) {i+1}: {excerpt}')
+        excerpt = document['_source']['text']
+        
+        name = document['_source']['metadata']['name']
+        # print('name: ', name)
 
-            name = document['_source']['metadata']['name']
-            # print('name: ', name)
-
-            page = ""
-            if "page" in document['_source']['metadata']:
-                page = document['_source']['metadata']['page']
-                    
-            uri = ""
-            if "uri" in document['_source']['metadata']:
-                uri = document['_source']['metadata']['uri']
-            # print('uri: ', uri)
-
-            confidence = str(document['_score'])
-            assessed_score = ""
-            
-            parent_doc_id = doc_level = ""
-            if enableParentDocumentRetrival == 'true':
-                if 'parent_doc_id' in document['_source']['metadata']:
-                    parent_doc_id = document['_source']['metadata']['parent_doc_id']
-                if 'doc_level' in document['_source']['metadata']:
-                    doc_level = document['_source']['metadata']['doc_level']
-                print(f"doc_level: {doc_level}, parent_doc_id: {parent_doc_id}")
-                
-            if page:
-                print('page: ', page)
-                doc_info = {
-                    "rag_type": 'opensearch-keyword',
-                    "confidence": confidence,
-                    "metadata": {
-                        "source": uri,
-                        "title": name,
-                        "excerpt": excerpt,
-                        "translated_excerpt": "",
-                        "document_attributes": {
-                            "_excerpt_page_number": page
-                        },
-                        "parent_doc_id": parent_doc_id,
-                        "doc_level": doc_level  
+        page = ""
+        if "page" in document['_source']['metadata']:
+            page = document['_source']['metadata']['page']
+        
+        url = ""
+        if "url" in document['_source']['metadata']:
+            url = document['_source']['metadata']['url']            
+        
+        docs.append(
+                Document(
+                    page_content=excerpt,
+                    metadata={
+                        'name': name,
+                        'url': url,
+                        'page': page,
+                        'from': 'lexical'
                     },
-                    "assessed_score": assessed_score,
-                }
-            else: 
-                doc_info = {
-                    "rag_type": 'opensearch-keyword',
-                    "confidence": confidence,
-                    "metadata": {
-                        "source": uri,
-                        "title": name,
-                        "excerpt": excerpt,
-                        "translated_excerpt": "",
-                        "parent_doc_id": parent_doc_id,
-                        "doc_level": doc_level  
-                    },
-                    "assessed_score": assessed_score,
-                }
-            
-            if parent_doc_id:  # parent doc
-                if parent_doc_id in docList:  # check duplication partially                    
-                    print('duplicated!')
-                else:
-                    relevant_docs.append(doc_info)
-                    docList.append(parent_doc_id)
-            else:  # child doc
-                relevant_docs.append(doc_info)
-
-    return relevant_docs
+                )
+            )
+    
+    for i, doc in enumerate(docs):
+        #print('doc: ', doc)
+        #print('doc content: ', doc.page_content)
+        
+        if len(doc.page_content)>=100:
+            text = doc.page_content[:100]
+        else:
+            text = doc.page_content            
+        print(f"--> lexical search doc[{i}]: {text}, metadata:{doc.metadata}")   
+        
+    return docs
 
 def vector_search(bedrock_embedding, query, top_k):
     print(f"query: {query}")
@@ -1834,7 +1799,7 @@ def search_by_opensearch(keyword: str) -> str:
         relevant_documents = get_documents_from_opensearch(vectorstore_opensearch, keyword, top_k)
                         
         for i, document in enumerate(relevant_documents):
-            #print(f'## Document(opensearch-vector) {i+1}: {document}')
+            print(f'## Document(opensearch-vector) {i+1}: {document}')
             
             parent_doc_id = document[0].metadata['parent_doc_id']
             doc_level = document[0].metadata['doc_level']
@@ -1861,7 +1826,7 @@ def search_by_opensearch(keyword: str) -> str:
         )
 
         for i, document in enumerate(relevant_documents):
-            #print(f'## Document(opensearch-vector) {i+1}: {document}')
+            print(f'## Document(opensearch-vector) {i+1}: {document}')
             
             excerpt = document[0].page_content
             
@@ -1897,53 +1862,6 @@ def search_by_opensearch(keyword: str) -> str:
     reference_docs += relevant_docs
         
     return relevant_contexts
-
-def lexical_search_for_tool(query, top_k):
-    # lexical search (keyword)
-    min_match = 0
-    
-    query = {
-        "query": {
-            "bool": {
-                "must": [
-                    {
-                        "match": {
-                            "text": {
-                                "query": query,
-                                "minimum_should_match": f'{min_match}%',
-                                "operator":  "or",
-                            }
-                        }
-                    },
-                ],
-                "filter": [
-                ]
-            }
-        }
-    }
-
-    response = os_client.search(
-        body=query,
-        index="idx-*", # all
-    )
-    # print('lexical query result: ', json.dumps(response))
-        
-    answer = ""
-    for i, document in enumerate(response['hits']['hits']):
-        if i>=top_k: 
-            break
-                    
-        excerpt = document['_source']['text']
-
-        uri = ""
-        if "uri" in document['_source']['metadata']:
-            uri = document['_source']['metadata']['uri']
-        # print('uri: ', uri)
-
-        answer = answer + f"{excerpt}, URL: {uri}\n\n"
-        
-    print('lexical answer: ', answer)
-    return answer
 
 # define tools
 tools = [get_current_time, get_book_list, get_weather_info, search_by_tavily, search_by_opensearch]        
@@ -2122,10 +2040,7 @@ def get_references(docs):
         if "from" in doc.metadata:
             sourceType = doc.metadata['from']
         else:
-            if useEnhancedSearch:
-                sourceType = "OpenSearch"
-            else:
-                sourceType = "WWW"
+            sourceType = "WWW"
         #print('sourceType: ', sourceType)        
         
         #if len(doc.page_content)>=1000:
