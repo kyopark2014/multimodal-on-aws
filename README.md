@@ -1,4 +1,4 @@
-# Anthropic Claude 3.5 Haiku로 RAG 활용하기
+# Anthropic Claude로 RAG 활용하기
 
 <a href="https://hits.seeyoufarm.com"><img src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2Fkyopark2014%2Fmultimodal-on-aws&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false"/></a>
 <img alt="License" src="https://img.shields.io/badge/LICENSE-MIT-green">
